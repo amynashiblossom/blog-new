@@ -6,8 +6,12 @@ tags:
   - 생산성
 publish: true
 ---
-!! 옵시디언을 cloudflare와 연동시키는 데에는 원래는 이렇게 복잡하거나 어렵거나 꼬이는 일이 없습니다
-다만 저의 경우는 뭔가 자꾸 꼬여서 문제가 생겼었고요
+!! 옵시디언을 생성해서 cloudflare로 연동시키는 과정 속에 예측하지 못한 오류가 발생하게 되어 제미나이의 도움을 많이 받아 진행했습니다
+특히 cloudflare 배포과정에서 처음에 배포가 성공한 후에도 후에 다시 문제가 생겨 되짚어서 해결하는 부분들이 생겼었는데요.
+플러그인 부분에서 문제가 생겼던 부분들을 공유해 봅니다.
+
+그럼에도 옵시디언으로 작성한 내용을 cloudflare로 연동시키는 건 ai에게 글이 읽혀지기 좋은 구조가 된다고 해서 함께 나누고 싶습니다.
+
 
 전체적인 구조는 https://hel-p.tistory.com/56 을 참고하셔서 진행하시면 됩니다.
 
@@ -26,13 +30,16 @@ npm install 시켜야 하는 부분이 있어요
 
 ! component 폴더 내의 Quartz/ components 내에 경로 설정 부분
 
-!. Quartz 에서 head.tsx 파일 내에 customOgIamges를 정의하는 코드가 꼭 필요합니다
-const CustomImagesEmitterName = "CustomOgImages"
+!. Quartz 에서 head.tsx 파일 내에 customOgImages를 다루는 부분에서
+기본 quartz 플러그인 파일에 customOgImages 플러그인이 없어서 문제가 계속 발생할 수 있습니다.
+
+처음에는 1. 
+const CustomImagesEmitterName = "CustomOgImages" 정의하는 방법으로 하였으나,
 (제미나이의 도움 받아 코드 작성) * 이 부분은 * CustomOgimages 관련 플러그인이 없는 관계로 아예 이 줄을 삭제하는 방법으로 다시 해결했습니다.
 
 ![[Pasted image 20260630133356.png]]
 
-이 방식보다는 그냥 
+2. 이 방식보다는 그냥 
 /customOgImages 가 없는 형태로 수정해서 진행했습니다.
 ![[생산성,브랜딩 관련_옵시디언을 cloudflare로 연동시켜 기술블로그 생성1.png]]
 
@@ -65,7 +72,7 @@ pages.dev 앞에 들어갈 url구성을 합니다(변경 못함)/ 프로젝트�
 도움 받은 https://hel-p.tistory.com/56 에서는 
 build command를 npx quartz build로 적으라 되어 있는데요,
 
-head 파일에서 Csu
+head 파일에서 예상치 못한 플러그인 없음 문제에 봉착하실 경우 
 
 
 
