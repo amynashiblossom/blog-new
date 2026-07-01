@@ -113,3 +113,74 @@ plugin 꼭 다운받으셔야 할 부분이
 * 큰 문제점을 발견한게 : 클립보드에서 바로 붙여넣으면 다시 깃허브에서 다운받을때 파일이 없어져버리는 문제점을 발견했습니다.
 * 그래서 그냥 asset에 화면을 [윈도우]+[shift]+[s]가 아니라 하단의 
 *오려두기 형태로 화면을 캡쳐하셔셔 저장하시는 것을 추천드립니다.
+
+그리고 [[옵시디언태그가독성강화]]
+
+![[옵시디언활용2.PNG]]
+
+![[옵시디언활용법3.png]]
+
+
+
+styles의 custom에서 태그 가독성 강화 코드는 
+
+![[옵시디언 활용4.png|615]]
+
+해당 코드는 
+@use "./variables.scss" as *;
+
+  
+
+.tags {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 0.25rem;
+
+}
+
+.pill {
+
+    white-space: nowrap;
+
+    margin: 0 !important;
+
+}
+
+.page-header .properties {
+
+    display: block;
+
+    text-align: left;
+
+}
+
+  
+
+/* 태그가 나열되는 셀의 정렬을 왼쪽으로 변경 */
+
+.page-header .properties td {
+
+    text-align: left !important;
+
+    justify-content: flex-start !important;
+
+}
+
+  
+
+/* 태그 그룹을 왼쪽으로 배치 */
+
+.page-header .tags {
+
+    display: flex;
+
+    justify-content: flex-start;
+
+    flex-wrap: wrap;
+
+    gap: 0.5rem;
+
+}
