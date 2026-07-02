@@ -12,6 +12,7 @@ tags:
   - 구글/스티치
   - 스티치
   - stitch
+  - prototype
 publish: true
 ---
 
