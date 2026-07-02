@@ -1,5 +1,5 @@
 ---
-title: sprint1_day4_프로토_타입_제작과_프로토_타입_검증_모두의셔틀_case
+title: sprint1_day4_프로토_타입_제작과_프로토_타입_검증_UT모의대본_모두의셔틀_case
 tags:
   - 프로토타입
   - UT모의대본
