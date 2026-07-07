@@ -13,7 +13,7 @@ tags:
 
 ![[260707 성향카테고리.PNG]]
 Design thinking Process 통해
-Empathize - define - ideate - prototype - test
+[[Empathize - define - ideate - prototype - test]]
  과정을 하면서 전 과정을 왔다갔다 빠르게 실행하셨음
  성향은 개척형이라는 것을 알게 되셨음
  Prototype 으로 구현하고 검증하는 그 과정이 즐거우셨다고 함.
@@ -86,3 +86,7 @@ Q&A
 -툴 만질 줄 아는 것 어필함
 모든 발표생들 앞에서 발표하는 건을 Socar에서 발표하는 건 모두
 계속 외워서 발표하게 됨
+
+-project 진행 팁
+->우리가 왜 이 프로젝트를 진행하지?를 계속 가져갔음
+어떤 문제를 해결하고자 했었지?라고 문제를 계속 리마인딩하면서 좁혀갔다.
