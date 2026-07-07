@@ -1,5 +1,5 @@
 ---
-title: 2nd week_day1_via강점검사 통한 팀빌딩, 프로젝트진행상황 관리, 팀 프로젝트관리
+title: 2nd week_day1_via강점검사 통한 팀빌딩, 프로젝트관리와 팀 커뮤니케이션
 tags:
   - 강점검사
   - via
