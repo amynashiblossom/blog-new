@@ -14,6 +14,7 @@ tags:
   - stitch
   - prototype
 publish: true
+date: 2026-07-03
 ---
 [[모두의셔틀/앱기획 및 데이터시각화 통한 cx 개선]]
 프로토타입 제작
