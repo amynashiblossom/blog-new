@@ -72,3 +72,4 @@ https://www.linkedin.com/posts/amy-in-love_qzcstkrqrulpspfcx-qsyslsrpwrdaqviqtzr
 - 이슈로그, 의사결정 히스토리 기록
 - 프로젝트 진행상황 점검 및 에스컬레이션
 ![[20260707 ai pm_프로젝트관리와 팀커뮤니케이션(프로젝트관리에서 실제로 매우 중요한 부분)-1.png]]
+다음 프로젝트의 경우, 킥오프문서, 이슈로그, 의사결정 히스토리 기록, 프로젝트 진행상황 점검 및 에스컬레이션을 반드시 활용한다
