@@ -2,6 +2,7 @@
 title: 2nd week_day2_포폴제작 특강
 tags:
   - 포트폴리오
+  - 삶의여정
 date: 2026-07-08
 publish: true
 ---
