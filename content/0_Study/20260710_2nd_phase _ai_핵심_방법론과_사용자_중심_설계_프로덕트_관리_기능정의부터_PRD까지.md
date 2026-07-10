@@ -141,3 +141,4 @@ vooster.ai를 이용한 prd 작성
 나만의 PRD 생성기를 통해 
 gemini jam을 통해 프롬프트를 어떻게 설정하는가에 따라 간단하게 생성 가능함
 ![[20260710_2nd_phase _ai_핵심_방법론과_사용자_중심_설계_프로덕트_관리_기능정의부터_PRD까지25.png]]
+https://app.vooster.ai/ko/org/kairoscx/projects/prj_x44rzuyiudkk4nb7r3kktt8b/documents
