@@ -2,6 +2,7 @@
 title: sprint1_유저테스트_피드백반영
 tags:
 publish: true
+date: 2026-07-06
 ---
 [[모두의셔틀/앱기획 및 데이터시각화 통한 cx 개선]]
 
