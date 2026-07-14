@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>급구 - 근무자용 존중·신뢰 평가 및 당일 정산 프로토타입</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gupgoo: {
+                            blue: '#1A6CFF',
+                            'blue-light': '#E8F0FF',
+                            'blue-dark': '#0B4EC2',
+                            purple: '#4F46E5',
+                            'purple-dark': '#4338CA',
+                            green: '#22C55E',
+                            'green-light': '#F0FDF4',
+                            border: '#E2E8F0',
+                            bg: '#F8FAFC',
+                            slate: '#0F172A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts (Pretendard) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #0F172A;
+            background-image: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 70%);
+        }
+        /* Custom App Scrollbar inside Device mockup */
+        .app-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .app-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .app-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        /* Shake & Pulsing animations for interactive highlights */
+        .pulse-gupgoo {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .85; transform: scale(1.02); }
+        }
+        /* Quick Transition Utility */
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col items-center justify-center p-4 md:p-8">
+
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- LEFT PANEL: CONCEPT INTRODUCTION & DATA SYNC -->
+        <div class="lg:col-span-5 text-white flex flex-col gap-6 pr-0 lg:pr-4">
+            <div class="flex items-center gap-2.5">
+                <span class="bg-gupgoo-blue text-white font-black text-sm px-3 py-1 rounded-lg">급구</span>
+                <span class="text-xs bg-white/10 text-slate-300 border border-white/10 px-2.5 py-1 rounded-full font-bold">근무자전용 UI</span>
+            </div>
+            
+            <div class="flex flex-col gap-2">
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+                    "존중을 투표하고,<br>급여는 1시간 내 정산!"
+                </h1>
+                <p class="text-slate-400 text-sm md:text-base leading-relaxed">
+                    근무자가 근무를 마친 뒤 마주하는 실제 경험의 순간을 동기화했습니다. 
+                    단순한 평점이 아닌 상생적 넛지를 만드는 **4대 원클릭 평판 기록**이 어떻게 즉시 정산으로 자연스럽게 이어지는지 직접 조작하며 확인해 보세요.
+                </p>
+            </div>
+
+            <!-- Flow Cards -->
+            <div class="flex flex-col gap-3.5 mt-2">
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex gap-3.5 items-start">
+                    <div class="w-8 h-8 bg-gupgoo-blue/20 text-gupgoo-blue rounded-full flex items-center justify-center font-bold text-xs shrink-0">1</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-200">익명성 보장을 통한 양심적 투표</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">답변 결과는 사업장(사장님)에게 개별 노출되지 않으며, 플랫폼 통계로 정제되어 신뢰도 계산에만 사용됩니다.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex gap-3.5 items-start">
+                    <div class="w-8 h-8 bg-gupgoo-purple/20 text-gupgoo-purple rounded-full flex items-center justify-center font-bold text-xs shrink-0">2</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-200">초고속 간편 결제 연동 (정합성 100%)</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">질적 검증(약속 이행)이 통과되는 순간, 1시간 이내 급여 입금이 무상 활성화되어 즉시 이체를 유도합니다.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl flex gap-3.5 items-start">
+                    <div class="w-8 h-8 bg-gupgoo-green/20 text-gupgoo-green rounded-full flex items-center justify-center font-bold text-xs shrink-0">3</div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-200">상호 님 호칭 준수 사업장 - 우수 근무자 우선 매칭</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">서로 '님' 호칭을 존중한 사업장은 출퇴근 준수율 100% 및 다시 근무하고 싶은 의향이 높은 고평점 근로자와 우선 매칭되는 매커니즘을 경험합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactivity Hint -->
+            <div class="text-[11px] text-gupgoo-blue font-bold flex items-center gap-1.5 bg-gupgoo-blue/10 self-start px-3 py-1.5 rounded-full border border-gupgoo-blue/20">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>오른쪽 스마트폰 화면 내부의 버튼들을 직접 클릭해보세요.</span>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: THE PREMIUM SMARTPHONE SIMULATOR -->
+        <div class="lg:col-span-7 flex flex-col items-center">
+            
+            <!-- PHONE FRAME -->
+            <div class="relative w-[360px] h-[720px] bg-slate-950 rounded-[48px] p-3.5 shadow-2xl border-4 border-slate-800 shrink-0 select-none">
+                
+                <!-- Front Camera / Dynamic Island Simulator -->
+                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-36 h-6 bg-slate-950 rounded-full z-30 flex items-center justify-center">
+                    <div class="w-2.5 h-2.5 bg-slate-900 rounded-full mr-2"></div>
+                    <div class="w-12 h-1 bg-slate-800 rounded"></div>
+                </div>
+
+                <!-- PHONE SCREEN CONTAINER -->
+                <div class="w-full h-full bg-white rounded-[36px] overflow-hidden flex flex-col relative justify-between">
+                    
+                    <!-- BOTTOM NAV BAR SIMULATOR -->
+                    <!-- Active views are swapped inside this body container -->
+                    <div class="flex-grow flex flex-col overflow-hidden relative">
+                        
+                        <!-- PAGE 1: EVALUATION CHECKLIST (EXACT gupgoo_employer_interactive_dashboard_2.PNG STYLE) -->
+                        <div id="page-eval" class="flex-grow flex flex-col justify-between h-full bg-white fade-in">
+                            
+                            <!-- Premium Indigo/Blue Gradient Header with specific colors -->
+                            <div class="bg-gradient-to-b from-[#4F46E5] to-[#3B82F6] px-5 pt-9 pb-5 flex flex-col gap-1.5 text-white shrink-0 relative overflow-hidden">
+                                <div class="absolute right-0 bottom-0 w-36 h-36 bg-white/5 rounded-full blur-2xl"></div>
+                                <div class="flex items-center justify-between">
+                                    <!-- Semi-transparent badge matching PNG exactly -->
+                                    <span class="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold tracking-tight text-white border border-white/10">근무 완료</span>
+                                    <div class="flex gap-2">
+                                        <i class="fa-solid fa-share-nodes text-white/80 text-xs"></i>
+                                        <i class="fa-solid fa-ellipsis text-white/80 text-xs"></i>
+                                    </div>
+                                </div>
+                                <h3 class="font-extrabold text-[20px] leading-snug tracking-tight text-white mt-1">오늘 하루도 수고하셨어요</h3>
+                                <p class="text-[11px] text-white/85 font-medium">해피마트 강남점 · 14:00~20:00 (6h)</p>
+                            </div>
+
+                            <!-- Survey Content Area -->
+                            <div class="flex-grow overflow-y-auto px-5 py-4 flex flex-col gap-4.5 app-scroll">
+                                <p class="text-[11.5px] text-slate-400 font-semibold tracking-tight mb-1">
+                                    3초면 충분해요 · 답변은 사업장에 공개되지 않아요
+                                </p>
+
+                                <!-- Questions Loop matching EXACT PNG spec -->
+                                <div class="flex flex-col gap-4" id="survey-form">
+                                    <!-- Q1 -->
+                                    <div class="flex flex-col gap-2">
+                                        <p class="text-[12.5px] font-bold text-slate-800 tracking-tight">사장님이 '님'이라고 불러주셨나요?</p>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <button onclick="chooseAnswer(1, 'yes', this)" class="q-btn-1 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">네</button>
+                                            <button onclick="chooseAnswer(1, 'no', this)" class="q-btn-1 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">아니요</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Q2 -->
+                                    <div class="flex flex-col gap-2">
+                                        <p class="text-[12.5px] font-bold text-slate-800 tracking-tight">부탁하듯 존댓말로 업무를 요청하셨나요?</p>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <button onclick="chooseAnswer(2, 'yes', this)" class="q-btn-2 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">네</button>
+                                            <button onclick="chooseAnswer(2, 'no', this)" class="q-btn-2 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">아니요</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Q3 -->
+                                    <div class="flex flex-col gap-2">
+                                        <p class="text-[12.5px] font-bold text-slate-800 tracking-tight">전반적으로 서로 존중하는 분위기였나요?</p>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <button onclick="chooseAnswer(3, 'yes', this)" class="q-btn-3 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">네</button>
+                                            <button onclick="chooseAnswer(3, 'no', this)" class="q-btn-3 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">아니요</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Q4 -->
+                                    <div class="flex flex-col gap-2">
+                                        <p class="text-[12.5px] font-bold text-slate-800 tracking-tight">공고에 적힌 조건대로 근무하고, 제때 급여를 받으셨나요?</p>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <button onclick="chooseAnswer(4, 'yes', this)" class="q-btn-4 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">네</button>
+                                            <button onclick="chooseAnswer(4, 'no', this)" class="q-btn-4 border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all">아니요</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Action Area -->
+                            <div class="p-4 border-t border-slate-100 bg-white shrink-0">
+                                <button id="cta-button" disabled onclick="submitAndProgress()" class="w-full bg-[#ECEBFC] text-[#716AE2] font-extrabold text-xs py-4 rounded-full transition-all duration-300 cursor-not-allowed">
+                                    4개 항목에 답해주세요
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PAGE 2: SECURE FAST PAYOUT (IMMEDIATE GRATIFICATION STEP) -->
+                        <div id="page-pay" class="hidden flex-grow flex-col justify-between h-full bg-gupgoo-bg fade-in">
+                            <div class="bg-white px-5 pt-8 pb-4 flex items-center justify-between border-b border-slate-100 shrink-0">
+                                <button onclick="navigatePage('eval')" class="text-slate-400 hover:text-slate-800 transition-colors"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                                <span class="font-extrabold text-sm text-slate-800">1시간 이내 초고속 정산</span>
+                                <div class="w-6"></div> <!-- spacer -->
+                            </div>
+
+                            <!-- Payment Details -->
+                            <div class="flex-grow overflow-y-auto p-5 flex flex-col gap-4 app-scroll">
+                                <div class="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-400">정산 대상 가맹점</span>
+                                        <span class="text-xs font-extrabold text-slate-800">해피마트 강남점</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-400">확정 근무 요건</span>
+                                        <span class="text-xs font-semibold text-slate-600">6시간 (14:00 ~ 20:00)</span>
+                                    </div>
+                                    <div class="h-px bg-slate-100 my-1"></div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-extrabold text-slate-800">총 정산 지급 금액</span>
+                                        <span class="text-base font-black text-gupgoo-blue">66,000원</span>
+                                    </div>
+                                </div>
+
+                                <!-- Trust Matching Success Badge -->
+                                <div class="bg-gupgoo-blue-light/50 border border-gupgoo-blue/20 p-4 rounded-2xl flex items-start gap-3">
+                                    <div class="bg-gupgoo-blue text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
+                                    <div>
+                                        <h4 class="text-xs font-extrabold text-gupgoo-blue">존중·신뢰 약속 이행 검증 성공</h4>
+                                        <p class="text-[10px] text-slate-500 mt-0.5 leading-normal">
+                                            정시 조건 준수가 검증 완료되어 간편결제 시스템이 무상 오픈되었습니다. 영업일 상관없이 즉시 송금이 실행됩니다.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Account Selector -->
+                                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-2">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase">송금받을 계좌 정보</label>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="bg-slate-100 text-[10px] font-bold text-slate-600 px-2 py-1 rounded">신한</span>
+                                            <span class="text-xs font-semibold text-slate-800">110-***-123456</span>
+                                        </div>
+                                        <span class="text-[10px] text-gupgoo-blue font-bold cursor-pointer hover:underline">변경</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payout Trigger Button -->
+                            <div class="p-4 bg-white border-t border-slate-100 shrink-0">
+                                <button onclick="triggerSecurePayout()" class="w-full bg-gupgoo-blue text-white font-extrabold text-xs py-4 rounded-full hover:bg-gupgoo-blue-dark transition-all shadow-md shadow-gupgoo-blue/10 pulse-gupgoo">
+                                    지금 즉시 급여 정산하기 (1초 이내)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PAGE 3: MY REPUTATION PORTFOLIO -->
+                        <div id="page-profile" class="hidden flex-grow flex-col justify-between h-full bg-gupgoo-bg fade-in">
+                            <div class="bg-white px-5 pt-8 pb-4 flex items-center justify-between border-b border-slate-100 shrink-0">
+                                <span class="font-extrabold text-sm text-slate-800">나의 급구 존중 평판</span>
+                                <div class="w-4"></div>
+                            </div>
+
+                            <!-- Profile Body -->
+                            <div class="flex-grow overflow-y-auto p-5 flex flex-col gap-4 app-scroll">
+                                
+                                <!-- Worker Avatar & Score Card -->
+                                <div class="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center text-center gap-3">
+                                    <div class="w-16 h-16 bg-gradient-to-tr from-gupgoo-blue to-gupgoo-purple rounded-full flex items-center justify-center text-white text-xl font-bold relative">
+                                        김급구
+                                        <span class="absolute -bottom-1 -right-1 bg-gupgoo-green text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full border-2 border-white">매너 1등급</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-extrabold text-slate-800">성실과 매너를 증명한 상위 1%</h4>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">최근 3개월 무단 취소 0회 · 매너 피드백 100%</p>
+                                    </div>
+                                    
+                                    <!-- Respect score gauge -->
+                                    <div class="w-full pt-1.5 border-t border-slate-100">
+                                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                                            <span>나의 상호 존중 평가율</span>
+                                            <span class="text-gupgoo-blue">100%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-gupgoo-blue h-full" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Earned Badge Items -->
+                                <div class="flex flex-col gap-2">
+                                    <h4 class="text-[11px] font-bold text-slate-400">보유한 리스펙트 뱃지</h4>
+                                    
+                                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                                        <div class="w-9 h-9 bg-gupgoo-blue-light text-gupgoo-blue rounded-full flex items-center justify-center text-sm"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                        <div>
+                                            <h5 class="text-xs font-bold text-slate-800">출퇴근 준수율 100% 달성</h5>
+                                            <p class="text-[9.5px] text-slate-400">약속된 출퇴근 준수율 100% 달성 시 부여</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                                        <div class="w-9 h-9 bg-gupgoo-green-light text-gupgoo-green rounded-full flex items-center justify-center text-sm"><i class="fa-solid fa-handshake"></i></div>
+                                        <div>
+                                            <h5 class="text-xs font-bold text-slate-800">님 호칭 모범 지킴이</h5>
+                                            <p class="text-[9.5px] text-slate-400">근무 후 동료 및 사업주로부터 존칭 사용 피드백 수집</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Extra nudge banner -->
+                            <div class="p-4 bg-white border-t border-slate-100 text-center shrink-0">
+                                <p class="text-[10px] text-slate-400 leading-normal">
+                                    상호 '님' 호칭을 존중한 우수 사업장과<br><span class="text-gupgoo-blue font-bold">출퇴근 100% 및 고평점 근무자 간의 우선 추천 매칭</span>이 최우선 실행됩니다!
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BOTTOM MOBILE TABS BAR SIMULATOR -->
+                    <div class="bg-white border-t border-slate-150 h-15 flex items-center justify-around text-[10px] text-slate-400 shrink-0 select-none">
+                        <button onclick="navigatePage('eval')" id="tab-eval" class="flex flex-col items-center gap-1 text-gupgoo-blue font-extrabold transition-colors">
+                            <i class="fa-solid fa-square-check text-base"></i>
+                            <span>근무 평가</span>
+                        </button>
+                        <button onclick="navigatePage('pay')" id="tab-pay" class="flex flex-col items-center gap-1 hover:text-slate-700 transition-colors">
+                            <i class="fa-solid fa-wallet text-base"></i>
+                            <span>급여 정산</span>
+                        </button>
+                        <button onclick="navigatePage('profile')" id="tab-profile" class="flex flex-col items-center gap-1 hover:text-slate-700 transition-colors">
+                            <i class="fa-solid fa-id-card text-base"></i>
+                            <span>내 평판</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- NOTIFICATION FLOATING TOAST -->
+    <div id="toast-notify" class="fixed bottom-6 right-6 bg-slate-900 text-white rounded-2xl px-5 py-4.5 border border-slate-800 shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 ease-out z-50 max-w-sm">
+        <div class="bg-gupgoo-green text-white w-7 h-7 rounded-full flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold" id="toast-title">송금 처리 성공</p>
+            <p class="text-[10px] text-slate-400 mt-0.5" id="toast-desc">신한 계좌로 66,000원이 무상 이체되었습니다.</p>
+        </div>
+    </div>
+
+    <!-- INTERACTIVE JAVASCRIPT -->
+    <script>
+        // Track response state for 4 survey questions (null = unanswered, 'yes' or 'no')
+        let userResponses = {
+            1: null,
+            2: null,
+            3: null,
+            4: null
+        };
+
+        // CHOOSE ANSWER INTERACTION (1-TAP CAPSULE BUTTONS)
+        function chooseAnswer(questionNum, answer, btnEl) {
+            // Find both buttons under this question group
+            const siblingButtons = document.querySelectorAll(`.q-btn-${questionNum}`);
+            siblingButtons.forEach(btn => {
+                btn.className = `border border-slate-200 py-2.5 rounded-full text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-all q-btn-${questionNum}`;
+            });
+
+            // Accentuate selected option
+            if (answer === 'yes') {
+                btnEl.className = `border border-gupgoo-blue py-2.5 rounded-full text-xs font-bold text-white bg-gupgoo-blue transition-all q-btn-${questionNum}`;
+            } else {
+                btnEl.className = `border border-red-500 py-2.5 rounded-full text-xs font-bold text-white bg-red-500 transition-all q-btn-${questionNum}`;
+            }
+
+            // Save state
+            userResponses[questionNum] = answer;
+
+            // Evaluate if form is completely answered to activate CTA
+            checkCompletionStatus();
+        }
+
+        // Check if all 4 questions have been answered
+        function checkCompletionStatus() {
+            const isFinished = Object.values(userResponses).every(val => val !== null);
+            const ctaBtn = document.getElementById('cta-button');
+
+            if (isFinished) {
+                ctaBtn.disabled = false;
+                ctaBtn.className = "w-full bg-gupgoo-blue text-white font-extrabold text-xs py-4 rounded-full transition-all duration-300 hover:bg-gupgoo-blue-dark shadow-md shadow-gupgoo-blue/15 cursor-pointer pulse-gupgoo";
+                ctaBtn.innerText = "평가 완료하고 급여 정산받기";
+            }
+        }
+
+        // SUBMIT SURVEY & SWITCH VIEW TO PAYOUT STAGE
+        function submitAndProgress() {
+            // Success Trigger
+            showNotificationToast(
+                "평가 완료!", 
+                "소중한 평판이 등록되었습니다. 급여를 제때 바로 정산해보세요!", 
+                "gupgoo-blue"
+            );
+
+            // Automatically navigate to Pay tab
+            setTimeout(() => {
+                navigatePage('pay');
+            }, 500);
+        }
+
+        // PAGE NAVIGATION SWITCH LOGIC FOR WORKER MOBILE WEBAPP
+        function navigatePage(pageId) {
+            // Hide all pages
+            document.getElementById('page-eval').classList.add('hidden');
+            document.getElementById('page-pay').classList.add('hidden');
+            document.getElementById('page-profile').classList.add('hidden');
+
+            // Show target page
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById(`page-${pageId}`).classList.add('flex');
+
+            // Reset tab highlights
+            const tabs = ['eval', 'pay', 'profile'];
+            tabs.forEach(tab => {
+                const tabEl = document.getElementById(`tab-${tab}`);
+                tabEl.className = "flex flex-col items-center gap-1 hover:text-slate-700 transition-colors";
+            });
+
+            // Highlight chosen tab
+            const activeTab = document.getElementById(`tab-${pageId}`);
+            activeTab.className = "flex flex-col items-center gap-1 text-gupgoo-blue font-extrabold transition-colors";
+        }
+
+        // TRANSACTIONAL NUDGE ALERTS SIMULATOR
+        function triggerSecurePayout() {
+            showNotificationToast(
+                "실시간 즉시 정산 성공!",
+                "신한은행 110-***-123456 계좌로 66,000원이 정상 이체되었습니다.",
+                "gupgoo-green"
+            );
+
+            // Navigate to profile tab to inspect feedback results
+            setTimeout(() => {
+                navigatePage('profile');
+            }, 1200);
+        }
+
+        // BEAUTIFIED MODAL TOAST TRIGGERS
+        function showNotificationToast(title, desc, themeColor = "gupgoo-green") {
+            const toast = document.getElementById('toast-notify');
+            const iconBadge = toast.querySelector('div');
+
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-desc').innerText = desc;
+
+            if (themeColor === "gupgoo-green") {
+                iconBadge.className = "bg-gupgoo-green text-white w-7 h-7 rounded-full flex items-center justify-center shrink-0";
+                iconBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else {
+                iconBadge.className = "bg-gupgoo-blue text-white w-7 h-7 rounded-full flex items-center justify-center shrink-0";
+                iconBadge.innerHTML = '<i class="fa-solid fa-thumbs-up"></i>';
+            }
+
+            // Animate on
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

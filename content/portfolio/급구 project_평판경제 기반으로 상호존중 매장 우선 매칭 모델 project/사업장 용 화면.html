@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>급구 파트너스 - 사장님 존중·신뢰 대시보드 프로토타입</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gupgoo: {
+                            blue: '#1A6CFF',
+                            'blue-light': '#E8F0FF',
+                            'blue-dark': '#0B4EC2',
+                            green: '#22C55E',
+                            'green-light': '#F0FDF4',
+                            orange: '#F59E0B',
+                            'orange-light': '#FFFBEB',
+                            slate: '#0F172A',
+                            border: '#E2E8F0',
+                            bg: '#F8FAFC'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts (Pretendard) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <!-- FontAwesome Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #F1F5F9;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="bg-gupgoo-blue text-white font-extrabold text-lg px-3 py-1 rounded-lg tracking-tight">급구</span>
+                <span class="text-slate-900 font-bold text-base">Partners <span class="text-xs text-gupgoo-blue font-semibold bg-gupgoo-blue-light px-2 py-0.5 rounded ml-1">B2B 사장님 화면</span></span>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2 bg-gupgoo-blue-light text-gupgoo-blue px-3 py-1.5 rounded-full font-bold">
+                    <i class="fa-solid fa-crown text-xs"></i>
+                    <span>최우수 리스펙트 점포 (상위 5%)</span>
+                </div>
+                <div class="h-4 w-px bg-slate-200"></div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-700">해피마트 강남점</span>
+                    <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">본사계정</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN PORT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- SIDE NAVIGATION BAR -->
+        <aside class="lg:col-span-3 flex flex-col gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                <div class="mb-4 pb-4 border-b border-slate-100">
+                    <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">메뉴 구분</p>
+                    <h2 class="text-lg font-bold text-slate-800 mt-1">대시보드 기획안</h2>
+                </div>
+                <nav class="flex flex-col gap-1" id="main-nav">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-left transition-all bg-gupgoo-blue text-white shadow-sm shadow-gupgoo-blue/10">
+                        <i class="fa-solid fa-chart-pie text-base"></i>
+                        <span>[PC웹] 종합 평판 분석 대시보드</span>
+                    </button>
+                    <button onclick="switchTab('mobile-mypage')" id="btn-mobile-mypage" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 text-left transition-all">
+                        <i class="fa-solid fa-mobile-screen-button text-base"></i>
+                        <span>[모바일] 사장님 마이페이지 앱 화면</span>
+                    </button>
+                    <button onclick="switchTab('mobile-nudge')" id="btn-mobile-nudge" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 text-left transition-all">
+                        <i class="fa-solid fa-bell-concierge text-base"></i>
+                        <span>[모바일] 근무종료 후 4대존중 평가앱</span>
+                    </button>
+                    <button onclick="switchTab('job-post')" id="btn-job-post" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 text-left transition-all">
+                        <i class="fa-solid fa-file-pen text-base"></i>
+                        <span>[PC웹] 공고 작성 & 존중 가이드</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- STRATEGY NUGGET CARD -->
+            <div class="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-gupgoo-blue opacity-20 rounded-full blur-xl"></div>
+                <span class="text-[10px] bg-gupgoo-blue text-white font-extrabold px-2 py-0.5 rounded tracking-wide">급구 상생 매커니즘</span>
+                <h3 class="font-bold text-base mt-2">존중이 만드는 무상의 가치</h3>
+                <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                    근무자와 사업주 간의 상호 매너 데이터가 누적되면 구인 공고 리스트 상단 무료 우선노출 등 강력한 혜택이 연결됩니다. 단순 보상금 지급보다 효과적인 고유 생태계입니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2 text-[11px] text-gupgoo-blue font-semibold">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    <span>노쇼율 40% 감소 데이터 증명</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT PANEL -->
+        <section class="lg:col-span-9 flex flex-col gap-6">
+            
+            <!-- TAB 1: PC WEB INTEGRATED DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content flex flex-col gap-6">
+                <!-- Top Statistics Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-400">누적 상호 존중율</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-3xl font-extrabold text-slate-900">98.6%</span>
+                            <span class="text-xs text-gupgoo-green font-bold"><i class="fa-solid fa-caret-up"></i> 1.2%</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-2">최근 30일, 근무자 투표 데이터</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-400">공고 약속 이행도</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-3xl font-extrabold text-slate-900">100%</span>
+                            <span class="text-xs text-slate-400">오차 없음</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-2">계약 조건 및 급여 지급 적시성</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-400">매칭당 소요 시간</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-3xl font-extrabold text-slate-900">14분</span>
+                            <span class="text-xs text-gupgoo-blue font-bold"><i class="fa-solid fa-caret-down"></i> 8분 단축</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-2">리스펙트 뱃지 부착 후 단축 효과</span>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-400">우수 인력 재방문율</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-3xl font-extrabold text-slate-900">84.2%</span>
+                            <span class="text-xs text-gupgoo-green font-bold"><i class="fa-solid fa-caret-up"></i> 18.5%</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-2">동일 근로자 재지원 계약률</span>
+                    </div>
+                </div>
+
+                <!-- Main Analysis Graphs and Respect Tags -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- Left: Respect Tag Analysis -->
+                    <div class="md:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-base text-slate-800">근무자들이 투표한 우리 매장 '존중 키워드'</h3>
+                                <span class="text-xs text-gupgoo-blue font-semibold bg-gupgoo-blue-light px-2 py-0.5 rounded">누적 120개 평가</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-6">근무 후 One-tap UI를 통해 근무자들이 익명으로 평가해준 실시간 통계입니다.</p>
+                        </div>
+                        
+                        <!-- Mini Bar Chart Metrics -->
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+                                    <span>💬 상호 "님" 호칭 지칭 사용</span>
+                                    <span>98.6% (118회)</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gupgoo-blue h-full rounded-full" style="width: 98.6%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+                                    <span>🙏 존댓말 기반 청유형 업무 지시</span>
+                                    <span>95.0% (114회)</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gupgoo-blue h-full rounded-full" style="width: 95%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+                                    <span>🕒 약속된 급여의 제때 지급 여부</span>
+                                    <span>100% (120회)</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gupgoo-green h-full rounded-full" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+                                    <span>😊 친절하고 평등한 소통 무드 형성</span>
+                                    <span>91.6% (110회)</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                                    <div class="bg-gupgoo-blue h-full rounded-full" style="width: 91.6%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Gupgoo Badge Benefit Status -->
+                    <div class="md:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-base text-slate-800 mb-1">획득한 보상 및 우선 혜택</h3>
+                            <p class="text-xs text-slate-400 mb-4">존중 지표 상위 유지 시 무상 연동되는 플랫폼 인센티브입니다.</p>
+                            
+                            <div class="border border-gupgoo-blue/20 bg-gupgoo-blue-light/30 rounded-xl p-4 flex items-start gap-3 mb-4">
+                                <i class="fa-solid fa-bolt text-gupgoo-blue text-lg mt-0.5 animate-pulse"></i>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gupgoo-blue">엘리트 매칭 우선 매칭권 ON</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                        공고를 올릴 때, 급구 내부 별점 및 이탈률이 낮은 'Top-tier 신뢰 근무자'들에게 맞춤 추천 푸시 및 매칭 선점 알림이 무상으로 활성화되어 작동 중입니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="border border-gupgoo-green/20 bg-gupgoo-green-light/30 rounded-xl p-4 flex items-start gap-3">
+                                <i class="fa-solid fa-shield-halved text-gupgoo-green text-lg mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gupgoo-green">구인공고 '존중인증' 노출 뱃지 획득</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                        일반 구인 공고와 차별화되는 리스펙트 뱃지가 적용되어 구인 시장 노출 지원율이 평균 대비 2.4배 향상되었습니다.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="switchTab('job-post')" class="w-full mt-4 bg-slate-900 text-white font-bold text-xs py-2.5 rounded-lg hover:bg-slate-800 transition-colors">
+                            우선 매칭 적용하여 새 공고 올리기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ROI Chart Pre vs Post Respect Mark -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-base text-slate-800 mb-2">존중마크 적용 전 vs 후 구인 지표 극적 체감 분석</h3>
+                    <p class="text-xs text-slate-400 mb-5">시스템 적용 이후, 노쇼 취소 건수는 확 줄고 고정적으로 재지원해 일해주는 신뢰도 높은 인력이 증가했습니다.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Comparison block -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">이전</span>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-600">노쇼 및 출근 취소 발생률</h4>
+                                    <p class="text-xl font-black text-slate-800 mt-0.5">38.4% <span class="text-xs text-slate-400 font-normal">(불투명한 조건 및 존중감 결여)</span></p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-300 hidden md:block"></i>
+                        </div>
+                        <!-- Right Comparison block -->
+                        <div class="bg-gupgoo-blue-light/20 p-4 rounded-xl border border-gupgoo-blue/10 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-gupgoo-blue text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">이후</span>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gupgoo-blue">존중마크 획득 후 출근 약속 이행률</h4>
+                                    <p class="text-xl font-black text-gupgoo-blue mt-0.5">99.2% <span class="text-xs text-slate-400 font-normal">(상호 배려 정량화 효과)</span></p>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-gupgoo-green text-white font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-caret-down"></i> 97% 개선</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MOBILE MYPAGE SCREEN -->
+            <div id="tab-mobile-mypage" class="tab-content hidden flex-col md:flex-row items-center justify-center gap-8 py-4">
+                <!-- Device Mockup frame -->
+                <div class="relative w-[340px] h-[670px] bg-slate-950 rounded-[40px] p-3 shadow-2xl border-4 border-slate-800 shrink-0">
+                    <!-- Notch camera and speaker simulator -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-full z-20 flex items-center justify-center">
+                        <div class="w-3 h-3 bg-slate-900 rounded-full mr-2"></div>
+                        <div class="w-10 h-1 bg-slate-800 rounded"></div>
+                    </div>
+                    <!-- Screen Container -->
+                    <div class="w-full h-full bg-gupgoo-bg rounded-[32px] overflow-hidden flex flex-col relative">
+                        <!-- Top Mobile Header bar -->
+                        <div class="bg-white px-5 pt-7 pb-3 flex items-center justify-between border-b border-slate-200">
+                            <i class="fa-solid fa-chevron-left text-slate-800 text-sm"></i>
+                            <span class="font-extrabold text-sm text-slate-800">마이페이지 (사장님용)</span>
+                            <i class="fa-solid fa-ellipsis text-slate-800 text-sm"></i>
+                        </div>
+
+                        <!-- Scrollable Mobile Body -->
+                        <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-4">
+                            <!-- Shop Info Header -->
+                            <div class="bg-white p-4 rounded-2xl border border-gupgoo-border shadow-sm">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <span class="text-[10px] bg-gupgoo-blue text-white font-extrabold px-1.5 py-0.5 rounded">상위 5% 최우수</span>
+                                        <h3 class="font-extrabold text-base text-slate-900 mt-1">해피마트 강남점</h3>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">구인 회원가입 번호: #0921820</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-gupgoo-blue-light text-gupgoo-blue rounded-full flex items-center justify-center text-lg font-bold">
+                                        마트
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-center">
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 font-medium">총 매칭</p>
+                                        <p class="text-sm font-extrabold text-slate-800">124회</p>
+                                    </div>
+                                    <div class="w-px bg-slate-100"></div>
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 font-medium">존중율</p>
+                                        <p class="text-sm font-extrabold text-slate-800">98.6%</p>
+                                    </div>
+                                    <div class="w-px bg-slate-100"></div>
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 font-medium">지급정합성</p>
+                                        <p class="text-sm font-extrabold text-gupgoo-green">100%</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Gauge Score Metric -->
+                            <div class="bg-white p-4 rounded-2xl border border-gupgoo-border shadow-sm">
+                                <h4 class="text-xs font-bold text-slate-800 mb-3">누적 리스펙트 분석 통계</h4>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                                            <span>긍정 존중 지표 (Respect Tag)</span>
+                                            <span class="text-gupgoo-blue">98%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-gupgoo-blue h-full" style="width: 98%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                                            <span>약속 신뢰 지표 (Trust Score)</span>
+                                            <span class="text-gupgoo-green">100%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-gupgoo-green h-full" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Received Tag Badges -->
+                            <div class="bg-white p-4 rounded-2xl border border-gupgoo-border shadow-sm">
+                                <h4 class="text-xs font-bold text-slate-800 mb-2">근무자가 선택한 존중 태그</h4>
+                                <p class="text-[10px] text-slate-400 mb-3">우수 존중매장 인증 마크 뱃지 획득 완료!</p>
+                                
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold">💬 님 호칭 지칭 (42회)</span>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold">🙏 청유형 업무요청 (38회)</span>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold">🕒 정확한 급여지급 (50회)</span>
+                                </div>
+                            </div>
+
+                            <!-- Incentive Alarm Nudge Box -->
+                            <div class="bg-gupgoo-blue-light/50 border border-dashed border-gupgoo-blue p-3.5 rounded-2xl flex gap-3 items-start">
+                                <i class="fa-solid fa-circle-check text-gupgoo-blue text-base mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-800">리스펙트 우수 혜택 가동 중</h4>
+                                    <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                                        현재 다른 마트 구인 공고 리스트보다 상단 노출 빈도가 2.4배 증가했습니다.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Navigation Simulator -->
+                        <div class="bg-white border-t border-slate-200 h-14 flex items-center justify-around text-[10px] text-slate-400 shrink-0">
+                            <div class="flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-house"></i>
+                                <span>홈</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>정산관리</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 text-gupgoo-blue font-bold">
+                                <i class="fa-solid fa-user"></i>
+                                <span>내 정보</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Explanation details right (PC WEB View) -->
+                <div class="flex-grow flex flex-col gap-4">
+                    <h3 class="font-extrabold text-2xl text-slate-800 leading-snug">모바일 앱에서도 '신뢰와 평판'을<br>가장 빠르고 명확하게 관리합니다.</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        사업주가 앱을 켜면 자신의 가게가 타 매장에 비해 얼마나 성실하게 '상호 존중' 문화를 안착시켰는지 정량 수치로 보여줍니다. 근로자들의 존중율 태그 축적 결과를 뱃지와 지수로 연동시켜 점주 스스로 평판 자산을 높이게 관리하는 심리적 보상 장치입니다.
+                    </p>
+                    <div class="space-y-3.5 mt-2">
+                        <div class="flex gap-3">
+                            <div class="bg-gupgoo-blue-light text-gupgoo-blue rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
+                                1
+                            </div>
+                            <p class="text-xs text-slate-600 mt-0.5"><strong>정량 신뢰 지수:</strong> 계약된 급여의 정시 지급과 공고된 근무 시간의 정확한 매칭 준수 상태 분석.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-gupgoo-blue-light text-gupgoo-blue rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
+                                2
+                            </div>
+                            <p class="text-xs text-slate-600 mt-0.5"><strong>정성 존중 태그:</strong> 근무자들이 One-tap으로 체크해준 "호칭사용", "청유형 요청" 만족도 데이터 표출.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MOBILE WORKER EVALUATION & NUDGE FORM -->
+            <div id="tab-mobile-nudge" class="tab-content hidden flex-col md:flex-row items-center justify-center gap-8 py-4">
+                <!-- Device Mockup frame -->
+                <div class="relative w-[340px] h-[670px] bg-slate-950 rounded-[40px] p-3 shadow-2xl border-4 border-slate-800 shrink-0">
+                    <!-- Notch camera and speaker simulator -->
+                    <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-full z-20 flex items-center justify-center">
+                        <div class="w-3 h-3 bg-slate-900 rounded-full mr-2"></div>
+                        <div class="w-10 h-1 bg-slate-800 rounded"></div>
+                    </div>
+                    <!-- Screen Container -->
+                    <div class="w-full h-full bg-white rounded-[32px] overflow-hidden flex flex-col relative justify-between">
+                        <!-- Top Mobile Header bar -->
+                        <div class="bg-gupgoo-blue px-5 pt-7 pb-4 flex flex-col gap-1 text-white shrink-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">근무 완료</span>
+                                <i class="fa-solid fa-ellipsis text-white/80 text-sm"></i>
+                            </div>
+                            <h3 class="font-extrabold text-lg mt-1">오늘 하루도 수고하셨어요</h3>
+                            <p class="text-[10px] text-white/80">해피마트 강남점 · 14:00~20:00 (6h)</p>
+                        </div>
+
+                        <!-- Scrollable Mobile Body -->
+                        <div class="flex-grow overflow-y-auto p-4 flex flex-col gap-4">
+                            <!-- Nudge Notice -->
+                            <div class="text-center pb-1">
+                                <p class="text-[11px] text-slate-500 font-medium">⚡ 3초면 충분해요 · 답변은 사업장에 공개되지 않아요</p>
+                            </div>
+
+                            <!-- Interactive Question Pairs -->
+                            <div class="flex flex-col gap-4" id="worker-checklist">
+                                <!-- Q1 -->
+                                <div class="flex flex-col gap-1.5">
+                                    <p class="text-xs font-bold text-slate-800">1. 사장님이 '님'이라고 불러주셨나요?</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button onclick="selectAnswer(1, 'yes', this)" class="q-btn-1 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">네</button>
+                                        <button onclick="selectAnswer(1, 'no', this)" class="q-btn-1 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">아니요</button>
+                                    </div>
+                                </div>
+
+                                <!-- Q2 -->
+                                <div class="flex flex-col gap-1.5">
+                                    <p class="text-xs font-bold text-slate-800">2. 부탁하듯 존댓말로 업무를 요청하셨나요?</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button onclick="selectAnswer(2, 'yes', this)" class="q-btn-2 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">네</button>
+                                        <button onclick="selectAnswer(2, 'no', this)" class="q-btn-2 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">아니요</button>
+                                    </div>
+                                </div>
+
+                                <!-- Q3 -->
+                                <div class="flex flex-col gap-1.5">
+                                    <p class="text-xs font-bold text-slate-800">3. 전반적으로 서로 존중하는 분위기였나요?</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button onclick="selectAnswer(3, 'yes', this)" class="q-btn-3 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">네</button>
+                                        <button onclick="selectAnswer(3, 'no', this)" class="q-btn-3 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">아니요</button>
+                                    </div>
+                                </div>
+
+                                <!-- Q4 -->
+                                <div class="flex flex-col gap-1.5">
+                                    <p class="text-xs font-bold text-slate-800">4. 약속된 급여를 제 때 지급하였나요?</p>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button onclick="selectAnswer(4, 'yes', this)" class="q-btn-4 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">네</button>
+                                        <button onclick="selectAnswer(4, 'no', this)" class="q-btn-4 border border-slate-200 py-2.5 rounded-xl text-xs font-semibold text-slate-600 bg-slate-50/50 hover:bg-slate-50 transition-all">아니요</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Simulated Button -->
+                        <div class="p-4 border-t border-slate-100 shrink-0 bg-white">
+                            <button id="submit-survey-btn" disabled onclick="submitWorkerSurvey()" class="w-full bg-slate-200 text-slate-400 font-bold text-xs py-3 rounded-xl transition-all cursor-not-allowed">
+                                4개 항목에 모두 답해주세요
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Explanation details right (PC WEB View) -->
+                <div class="flex-grow flex flex-col gap-4">
+                    <span class="text-xs font-bold text-gupgoo-blue bg-gupgoo-blue-light self-start px-2.5 py-1 rounded-full">개선안 유저 화면 (기존급구화면6,7,8,9 기반)</span>
+                    <h3 class="font-extrabold text-2xl text-slate-800 leading-snug">근로자가 체감하는 소통과 약속의<br>핵심 4가지 조건 기반 데이터 수집</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        기존의 불투명하고 단방향이었던 리뷰 구조를 혁신하여, 2025년 단기근로 우수 인터뷰 사례에서 추출한 핵심 4개 질적 지표를 '원클릭 캡슐 UI'로 즉시 평가하게 설계했습니다.
+                    </p>
+                    <div class="space-y-3.5 mt-2">
+                        <div class="flex gap-3">
+                            <div class="bg-gupgoo-blue-light text-gupgoo-blue rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
+                                1
+                            </div>
+                            <p class="text-xs text-slate-600 mt-0.5"><strong>님 호칭 & 존대 지칭의 정량화:</strong> 구직자의 자존감과 심리적 만족을 보장하는 인격존중 여부를 실시간으로 수집합니다.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-gupgoo-blue-light text-gupgoo-blue rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
+                                2
+                            </div>
+                            <p class="text-xs text-slate-600 mt-0.5"><strong>약속된 급여 정시 지급 (Q4):</strong> 근무자가 일한 만큼 누락이나 밀림 없이 약속된 시간 내에 안전하게 급여를 정산받았는지를 검증합니다.</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="bg-gupgoo-blue-light text-gupgoo-blue rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
+                                3
+                            </div>
+                            <p class="text-xs text-slate-600 mt-0.5"><strong>자동 대시보드 연결:</strong> 이 4대 질문에 대한 '네' 비율이 사업주 PC웹 파트너 센터에 '누적 상호 존중율' 및 '공고 약속 이행도' 수치로 실시간 자동 갱신됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PC WEB JOB POST STAGE RESPECT UX -->
+            <div id="tab-job-post" class="tab-content hidden flex-col gap-6">
+                <!-- Outer Form layout -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div class="border-b border-slate-100 pb-4 mb-5 flex items-center justify-between">
+                        <div>
+                            <h3 class="font-extrabold text-lg text-slate-900">새 구인 공고 등록</h3>
+                            <p class="text-xs text-slate-400 mt-1">공고 등록 시 '상생 존중 약속'을 이행하면 엘리트 우수 인력 지원율이 올라갑니다.</p>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full font-semibold">Step 2. 근무 요건 설정</span>
+                    </div>
+
+                    <!-- Post form fields -->
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 block mb-1.5">근무 파트 (직무 종류)</label>
+                                <input type="text" value="홀 서빙 및 매장 정리" disabled class="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 block mb-1.5">제시 시급</label>
+                                <input type="text" value="11,000원 (주휴 수당 별도 포함)" disabled class="w-full bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl text-xs text-slate-500">
+                            </div>
+                        </div>
+
+                        <!-- Core Respect UX Selector boxes -->
+                        <div class="border border-gupgoo-blue/20 bg-gupgoo-blue-light/20 p-5 rounded-2xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="bg-gupgoo-blue text-white font-extrabold text-[10px] px-1.5 py-0.5 rounded-md">핵심 약속</span>
+                                <h4 class="text-xs font-extrabold text-slate-800">상호 존중 매너 가이드라인 동의</h4>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mb-4 leading-normal">
+                                사장님들의 작은 행동 하나가 구인 성공의 열쇠입니다. 급구 플랫폼은 좋은 매장 문화를 지지합니다. 아래 체크박스를 약속해주시면 공고에 <strong>'리스펙트 보증 마크'</strong> 뱃지가 노출되어 최우수 구직자에게 우선 발송됩니다.
+                            </p>
+
+                            <!-- Checkbox 1 -->
+                            <div class="space-y-3 pt-2">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" checked class="w-4.5 h-4.5 rounded text-gupgoo-blue focus:ring-gupgoo-blue border-slate-300 mt-0.5">
+                                    <div>
+                                        <span class="text-xs font-bold text-slate-800 block">근무 중 상호 "님" 호칭 약속 및 존댓말 지칭</span>
+                                        <span class="text-[10px] text-slate-400 block mt-0.5">"김 씨", "어이" 대신 "김급구 님"이라는 공식 호칭 규칙을 사용하여 존댓말 청유형 업무 리딩에 동의합니다.</span>
+                                    </div>
+                                </label>
+                                <!-- Checkbox 2 -->
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" checked class="w-4.5 h-4.5 rounded text-gupgoo-blue focus:ring-gupgoo-blue border-slate-300 mt-0.5">
+                                    <div>
+                                        <span class="text-xs font-bold text-slate-800 block">정확한 퇴근 보장 및 급여 지급 예정 시기 명기</span>
+                                        <span class="text-[10px] text-slate-400 block mt-0.5">부당한 초과근로 요소를 원천 배제하며, 퇴근완료 후 약속된 시간 내(예: 1시간 이내 당일 정산 또는 익일 정오)에 정산 이체 예정 시점을 명확히 기재합니다.</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Specific Payment schedule details input inside job post -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 block mb-1.5">예상 급여 지급 시기 (가시성 준수)</label>
+                                <select class="w-full bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs text-slate-700 font-medium focus:ring-1 focus:ring-gupgoo-blue">
+                                    <option value="today-1h" selected>근무 종료 후 1시간 이내 입금 (매칭 효율 최고)</option>
+                                    <option value="today-12h">퇴근 후 당일 이내 입금</option>
+                                    <option value="tomorrow-noon">익일 정오(12:00) 이전 입금</option>
+                                    <option value="agreed-date">사전 상호 정해진 약정일 지급</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-600 block mb-1.5">초과근로 시 보상 약속</label>
+                                <select class="w-full bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs text-slate-700 font-medium focus:ring-1 focus:ring-gupgoo-blue">
+                                    <option value="standard" selected>실근무 10분 단위로 세부 시간 정합성 100% 비례 계산 지급</option>
+                                    <option value="negotiated">협의되지 않은 1분 이상의 추가 노동 요구 금지</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-5 border-t border-slate-100 flex justify-end gap-3">
+                        <button class="bg-slate-100 text-slate-500 font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-slate-200 transition-colors">임시저장</button>
+                        <button onclick="submitJobPostSimulation()" class="bg-gupgoo-blue text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-gupgoo-blue-dark transition-colors shadow-md shadow-gupgoo-blue/15">구인 공고 즉시 등록하기</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- FLOATING POPUP / TOAST ALERTS SIMULATOR -->
+    <div id="toast-message" class="fixed bottom-6 right-6 bg-slate-900 text-white rounded-2xl px-5 py-4 border border-slate-800 shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 ease-out z-50">
+        <div class="bg-gupgoo-green text-white w-7 h-7 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-check text-xs"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold" id="toast-title">등록 성공</p>
+            <p class="text-[10px] text-slate-400 mt-0.5" id="toast-desc">정보 변경이 정상 저장되었습니다.</p>
+        </div>
+    </div>
+
+    <!-- JS FOR DEMONSTRATING INTERACTIVE SCREENS -->
+    <script>
+        // Track Survey Answers (Worker side)
+        let surveyAnswers = {
+            1: null,
+            2: null,
+            3: null,
+            4: null
+        };
+
+        // TAB SWITCH LOGIC
+        function switchTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+            
+            // Show targeted tab
+            const target = document.getElementById(`tab-${tabId}`);
+            target.classList.remove('hidden');
+            if (tabId === 'mobile-mypage' || tabId === 'mobile-nudge') {
+                target.classList.add('flex');
+            } else {
+                target.classList.add('flex', 'flex-col');
+            }
+
+            // Update Navigation button state
+            document.querySelectorAll('#main-nav button').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-50 text-left transition-all";
+            });
+            
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-left transition-all bg-gupgoo-blue text-white shadow-sm shadow-gupgoo-blue/10";
+        }
+
+        // WORKER SURVEY ANSWER SELECTOR
+        function selectAnswer(questionNum, answer, btnElement) {
+            // Unselect all in this row
+            const buttons = document.querySelectorAll(`.q-btn-${questionNum}`);
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-gupgoo-blue', 'text-white', 'border-gupgoo-blue', 'bg-red-500', 'border-red-500');
+                btn.classList.add('bg-slate-50/50', 'text-slate-600', 'border-slate-200');
+            });
+
+            // Highlight chosen button
+            btnElement.classList.remove('bg-slate-50/50', 'text-slate-600', 'border-slate-200');
+            if (answer === 'yes') {
+                btnElement.classList.add('bg-gupgoo-blue', 'text-white', 'border-gupgoo-blue');
+            } else {
+                btnElement.classList.add('bg-red-500', 'text-white', 'border-red-500');
+            }
+
+            // Save state
+            surveyAnswers[questionNum] = answer;
+
+            // Check if all answered to enable CTA
+            checkSurveyCompletion();
+        }
+
+        function checkSurveyCompletion() {
+            const isAllAnswered = Object.values(surveyAnswers).every(val => val !== null);
+            const submitBtn = document.getElementById('submit-survey-btn');
+            
+            if (isAllAnswered) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-gupgoo-blue', 'text-white', 'hover:bg-gupgoo-blue-dark', 'shadow-md', 'shadow-gupgoo-blue/15');
+                submitBtn.innerText = "평가 등록하기";
+            }
+        }
+
+        // SIMULATION FEEDBACK TRIGGER TOAST
+        function triggerToast(title, desc, isGreen = true) {
+            const toast = document.getElementById('toast-message');
+            const iconWrap = toast.querySelector('div');
+            
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-desc').innerText = desc;
+
+            if (isGreen) {
+                iconWrap.className = "bg-gupgoo-green text-white w-7 h-7 rounded-full flex items-center justify-center";
+                iconWrap.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+            } else {
+                iconWrap.className = "bg-gupgoo-blue text-white w-7 h-7 rounded-full flex items-center justify-center";
+                iconWrap.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i>';
+            }
+
+            // Show animation
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        function submitWorkerSurvey() {
+            triggerToast(
+                "평가 완료!", 
+                "정직한 평가로 더 건강한 급구 매장 평판 문화를 만듭니다. 고맙습니다!", 
+                true
+            );
+            
+            // Reset survey buttons visually
+            const allSurveyBtns = document.querySelectorAll('#worker-checklist button');
+            allSurveyBtns.forEach(btn => {
+                btn.classList.remove('bg-gupgoo-blue', 'text-white', 'border-gupgoo-blue', 'bg-red-500', 'border-red-500');
+                btn.classList.add('bg-slate-50/50', 'text-slate-600', 'border-slate-200');
+            });
+            
+            // Disable submit button again
+            const submitBtn = document.getElementById('submit-survey-btn');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            submitBtn.classList.remove('bg-gupgoo-blue', 'text-white', 'hover:bg-gupgoo-blue-dark', 'shadow-md', 'shadow-gupgoo-blue/15');
+            submitBtn.innerText = "4개 항목에 모두 답해주세요";
+            
+            surveyAnswers = { 1: null, 2: null, 3: null, 4: null };
+        }
+
+        function submitJobPostSimulation() {
+            triggerToast(
+                "구인 공고 즉시 등록 완료", 
+                "상생 존중 마크 뱃지가 적용되어 상단 우선 매칭 알고리즘이 가동되었습니다.", 
+                true
+            );
+        }
+    </script>
+</body>
+</html>

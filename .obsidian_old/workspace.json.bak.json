@@ -1,0 +1,236 @@
+{
+  "main": {
+    "id": "7b8295979257a5c1",
+    "type": "split",
+    "children": [
+      {
+        "id": "5e4d3bdfa0e55113",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7128c70d456b19ae",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "content/01_Projects/20260714_Sprint_급구앱에서 더 좋은 업무경험을 실제 제공하는 조직이 더 근로제공자들에게 부각받게 하는 프로젝트.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "20260714_Sprint_급구앱에서 더 좋은 업무경험을 실제 제공하는 조직이 더 근로제공자들에게 부각받게 하는 프로젝트"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "759051f34d52cf65",
+    "type": "split",
+    "children": [
+      {
+        "id": "2cb0cb72e93f281b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f3e507f1d3db0885",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "6e0593fd48955cde",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d427ef8d74af0e42",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 284.5
+  },
+  "right": {
+    "id": "cb5b3f288048a85f",
+    "type": "split",
+    "children": [
+      {
+        "id": "fe8fd7cd2da0ba5a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "010dbd52c1d313df",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "content/0_Study/sprint1_day3_솔루션_구현_스토리보드_작성_완성.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for sprint1_day3_솔루션_구현_스토리보드_작성_완성"
+            }
+          },
+          {
+            "id": "ecdc9f8417768b48",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "content/0_Study/sprint1_day3_솔루션_구현_스토리보드_작성_완성.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from sprint1_day3_솔루션_구현_스토리보드_작성_완성"
+            }
+          },
+          {
+            "id": "5a92e82c77254547",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "4f52bc5e4770fa65",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "5bf8781b96ea3219",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "content/0_Study/sprint1_day3_솔루션_구현_스토리보드_작성_완성.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of sprint1_day3_솔루션_구현_스토리보드_작성_완성"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "7128c70d456b19ae",
+  "lastOpenFiles": [
+    "content/04_Assets/캡처.PNG",
+    "content/01_Projects/20260714_바이오 항암 치료제 임상경험 개선 Project.md",
+    "content/01_Projects/20260714_Sprint_급구앱에서 더 좋은 업무경험을 실제 제공하는 조직이 더 근로제공자들에게 부각받게 하는 프로젝트.md",
+    "content/0_Study/20260714_생성형ai 활용 기획,리서치 자동화.md",
+    "content/0_Study/Untitled.md",
+    "content/03_Insights/20260714_ai trends_바이오 항암 치료제 개발에 관심을 가지고 있는 ai조직들(claude)_claudescience 통한 소외질환치료제 도전(20260701).md",
+    "content/03_Insights/20260714 기준_차세대 항암치료제에서의 병목관련 논의를 계속해서 이어가는 바이오신약개발업계trend_임상경험개선으로 논의해가려는 저와 프로젝트팀!.md",
+    "content/04_Assets/KakaoTalk_20260714_103601582_04.jpg",
+    "content/04_Assets/KakaoTalk_20260714_103601582_02.jpg",
+    "content/04_Assets/KakaoTalk_20260714_103601582.jpg",
+    "content/04_Assets/KakaoTalk_20260714_103601582_03.jpg",
+    "content/04_Assets/KakaoTalk_20260714_103601582_01.jpg",
+    "content/03_Insights/20260713기준으로 토스사례에서 나온 프로덕트 관리 채용 사례인사이트_문제정의의 중요성 및 어떻게 문제를 해결하는가의 문제.md",
+    "content/0_Study/20260713_aipm핵심_방법론과_사용자이해_생성형_AI_활용_기획·리서치_자동화_ai스튜디오활용.md",
+    "content/04_Assets/20260713_프로토타입1.PNG",
+    "content/04_Assets/20260713_프로토타입6.PNG",
+    "content/04_Assets/20260713_프로토타입5.PNG",
+    "content/04_Assets/20260713_프로토타입4.PNG",
+    "content/04_Assets/20260713_프로토타입3.PNG",
+    "6명이 회의 일정을 잡는 경험 설계.md",
+    "content/0_Study/sprint1_day3_솔루션_구현_스토리보드_작성_완성.md",
+    "content/0_Study/Sprint1_day5_최종발표_sprint회고.md",
+    "content/03_Insights/20260711_문제정의의_중요성,pm은_결국_제품을_출시하는_사람.md",
+    "content/03_Insights/급구서비스 cx 개선안.md",
+    "content/0_Study/스프린트 팀 어른들의 모두의셔틀 개선.md",
+    "content/0_Study/스프린트1주차.md",
+    "content/0_Study/첫번째스프린트 어른들-모두의셔틀 문제 개선.md",
+    "content/0_Study/HMW(How Might We).md",
+    "content/0_Study/sprint1 발표D-3 일정관리.md",
+    "content/0_Study/sprint1_모두의_셔틀_UT_최종_가이드_및_대본_가안.md",
+    "content/0_Study/sprint1_유저테스트_피드백반영.md",
+    "content/0_Study/sprint1_day1 문제 정의 모두의셔틀 case.md",
+    "content/0_Study/sprint1_day2_타겟 설정_아이디어_발산_및_스케치_모두의셔틀case.md",
+    "content/0_Study/sprint1_day4_프로토_타입_제작과_프로토_타입_검증_UT모의대본_가안_모두의셔틀_case.md",
+    "content/0_Study/20260710_2nd_phase _ai_핵심_방법론과_사용자_중심_설계_프로덕트_관리_기능정의부터_PRD까지.md",
+    "content/04_Assets/20260710 24 vooster.ai",
+    "content/04_Assets/20260710_2nd_phase _ai_핵심_방법론과_사용자_중심_설계_프로덕트_관리_기능정의부터_PRD까지11.md",
+    "content/portfolio/참고 PM portfolio/pm스쿨-이주연-포트폴리오.pdf",
+    "content/portfolio/참고 PM portfolio",
+    "content/portfolio/새 폴더",
+    "content/portfolio/모두의셔틀 project",
+    "content/portfolio",
+    "portfolio/모두의셔틀 project",
+    "portfolio",
+    "content/01_Projects/모두의셔틀",
+    "content/모두의셔틀"
+  ]
+}
