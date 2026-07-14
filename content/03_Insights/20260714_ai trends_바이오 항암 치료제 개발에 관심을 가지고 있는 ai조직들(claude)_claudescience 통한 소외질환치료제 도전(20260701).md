@@ -1,5 +1,5 @@
 ---
-title: 20260714_ai trends_바이오 항암 치료제 개발에 관심을 가지고 있는 ai조직들(claude)
+title: 20260714_ai trends_바이오 항암 치료제 개발에 관심을 가지고 있는 ai조직들(claude)_claudescience 통한 소외질환치료제 도전(20260701)
 tags:
   - 수익구조
   - 비즈니스모델
