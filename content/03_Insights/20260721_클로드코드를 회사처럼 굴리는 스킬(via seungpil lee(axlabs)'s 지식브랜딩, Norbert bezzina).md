@@ -1,5 +1,5 @@
 ---
-title: 20260721_클로드코드를 회사처럼 굴리는 스킬(via seungpil lee(axlabs)'s 지식브랜딩, Norvert bezzina)
+title: 20260721_클로드코드를 회사처럼 굴리는 스킬(via seungpil lee(axlabs)'s 지식브랜딩, Norbert bezzina)
 tags:
   - 클로드코드
   - norvertbezzina
