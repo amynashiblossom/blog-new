@@ -7,6 +7,7 @@ tags:
   - ms
   - axlabs
   - 김덕중
+  - seungpillee
 publish: true
 date: 2026-07-21
 ---
