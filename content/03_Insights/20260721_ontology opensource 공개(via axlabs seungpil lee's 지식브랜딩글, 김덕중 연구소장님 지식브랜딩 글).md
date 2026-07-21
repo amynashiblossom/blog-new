@@ -12,7 +12,7 @@ date: 2026-07-21
 ---
 #온톨로지 오픈소스가 공개되었고, 이를 학습할 수 있게 ms에서 공개한 바 있다고 seungpil lee님과 김덕중 연구소장님께서 나눠주신 바 같이 나눕니다
 
-공개수준은 상업적으로 이용이 가능할 정도의 MIT 공개입니다
+공개수준은 상업적으로 이용이 가능할 범위의 공개입니다
 https://github.com/microsoft/Ontology-Playground.git
 
 이해를 돕는 AXLABS의 seungpil lee님의 지식브랜딩 글은 다음과 같습니다.
