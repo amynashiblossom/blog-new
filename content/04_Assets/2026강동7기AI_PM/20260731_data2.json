@@ -1,0 +1,13 @@
+[{
+  "event_name": "view_item",
+  "users": "22906"
+}, {
+  "event_name": "add_to_cart",
+  "users": "7113"
+}, {
+  "event_name": "begin_checkout",
+  "users": "3859"
+}, {
+  "event_name": "purchase",
+  "users": "1975"
+}]
