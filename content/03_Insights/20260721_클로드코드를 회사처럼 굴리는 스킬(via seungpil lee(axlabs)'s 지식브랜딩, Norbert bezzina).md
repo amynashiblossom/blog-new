@@ -6,6 +6,7 @@ tags:
   - axlabs
   - seungpillee
   - 지식브랜딩
+date: 2026-07-21
 ---
 1. [클로드코드를 회사처럼 굴리는 스킬이라는 내용을 나눠주신 @norbert bezzina, 그리고 Seungpil Lee 대표님 감사합니다! 실제로 바로돌아간대요 ontology글도 같이공부해요 seungpil대표님과 김소장님 감사합니다 다들계속 생존해요!! | amy Hyewon Lee 이혜원]
 2. 의의 : 클로드 코드를 워크스페이스 안에 옮겨놨을 뿐 아니라 바로 돌아감에 의의 있음
