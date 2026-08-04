@@ -1,0 +1,6 @@
+{
+  "name": "포트폴리오너도해 - AI 웹 포트폴리오 빌더",
+  "description": "직군별 5장 프로젝트 프레임워크, 노션 표 스펙 폼, 웃는 고양이 마스코트, JD 매칭 및 대외비 마스킹 지원 웹 포트폴리오 빌더",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
