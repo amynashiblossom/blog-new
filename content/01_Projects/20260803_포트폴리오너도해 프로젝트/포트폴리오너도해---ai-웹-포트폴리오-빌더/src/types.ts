@@ -93,6 +93,16 @@ export type PortfolioTheme = 'cream' | 'emerald' | 'serif' | 'dark' | 'navy';
 
 export type PortfolioViewMode = 'bento' | 'pitchdeck' | 'document';
 
+export type SectionType = 'hero' | 'competencies' | 'projects' | 'case_study' | 'contact';
+
+export interface SectionConfig {
+  id: SectionType;
+  title: string;
+  enabled: boolean;
+}
+
+export type CoverFrameStyle = 'macbook' | 'iphone' | 'glass' | 'banner' | 'handheld_iphone' | 'lifestyle_macbook';
+
 export interface UserProfile {
   name: string;
   roleTitle: string;
@@ -107,10 +117,23 @@ export interface UserProfile {
   selectedTheme: PortfolioTheme;
   customAccentColor?: string;
   viewMode: PortfolioViewMode;
+  coverFrameStyle?: CoverFrameStyle;
+  coverImageUrl?: string;
+  heroMetric1?: string;
+  heroMetric2?: string;
+  heroMetric1Val?: string;
+  heroMetric2Val?: string;
+  awardBadges?: string[];
+  processSteps?: string[];
+  floatingStickers?: string[];
   isConfidentialMasked: boolean;
   accessLevel: 'public' | 'password' | 'private';
   accessPassword?: string;
+  sectionConfigs?: SectionConfig[];
 }
+
+
+
 
 export interface ExtractedKeyword {
   keyword: string;

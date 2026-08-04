@@ -3,6 +3,8 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import { Client as NotionClient } from "@notionhq/client";
+
 
 dotenv.config();
 
@@ -404,6 +406,242 @@ ${rawText}
     return res.status(500).json({ error: "AI refinement failed", message: err.message });
   }
 });
+
+// --- NOTION API INTEGRATION ENDPOINTS ---
+
+function cleanNotionId(str: string): string {
+  if (!str) return "";
+  const cleaned = str.trim();
+  const match = cleaned.match(/([a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+  if (match) {
+    return match[1].replace(/-/g, "");
+  }
+  return cleaned.replace(/-/g, "");
+}
+
+function extractTitleFromNotionPage(page: any): string {
+  if (!page || !page.properties) return "Untitled Notion Page";
+  for (const key of Object.keys(page.properties)) {
+    const prop = page.properties[key];
+    if (prop.type === "title" && prop.title && prop.title.length > 0) {
+      return prop.title.map((t: any) => t.plain_text).join("");
+    }
+  }
+  return "Untitled Notion Page";
+}
+
+function extractTextFromNotionBlocks(blocks: any[]): string {
+  const lines: string[] = [];
+  for (const block of blocks) {
+    const type = block.type;
+    if (type && block[type]?.rich_text) {
+      const text = block[type].rich_text.map((t: any) => t.plain_text).join("");
+      if (text) {
+        lines.push(text);
+      }
+    }
+  }
+  return lines.join("\n");
+}
+
+// 1. Fetch Notion Database Pages
+app.post("/api/notion/fetch-database", async (req, res) => {
+  try {
+    const { apiKey, databaseId } = req.body;
+    const token = apiKey || process.env.NOTION_API_KEY;
+    if (!token) {
+      return res.status(400).json({ error: "Notion API Key (Integration Secret) is required." });
+    }
+    const cleanDbId = cleanNotionId(databaseId || process.env.NOTION_DATABASE_ID || "");
+    if (!cleanDbId) {
+      return res.status(400).json({ error: "Notion Database ID is required." });
+    }
+
+    const notion = new NotionClient({ auth: token });
+    const response = await (notion as any).databases.query({
+      database_id: cleanDbId,
+      page_size: 50,
+    });
+
+
+    const pages = response.results.map((page: any) => {
+      const title = extractTitleFromNotionPage(page);
+      return {
+        id: page.id,
+        title,
+        url: page.url,
+        createdTime: page.created_time,
+        lastEditedTime: page.last_edited_time,
+      };
+    });
+
+    return res.json({ success: true, count: pages.length, pages });
+  } catch (err: any) {
+    console.error("Error fetching Notion database:", err);
+    return res.status(500).json({
+      error: "Failed to fetch Notion database",
+      message: err.message || "Ensure your Integration token has access to this database.",
+    });
+  }
+});
+
+// 2. Import Notion Page and Refine into Experience Block
+app.post("/api/notion/import-page", async (req, res) => {
+  try {
+    const { apiKey, pageId, jobCategory } = req.body;
+    const token = apiKey || process.env.NOTION_API_KEY;
+    if (!token) {
+      return res.status(400).json({ error: "Notion API Key is required." });
+    }
+    const cleanId = cleanNotionId(pageId);
+    if (!cleanId) {
+      return res.status(400).json({ error: "Valid Notion Page ID is required." });
+    }
+
+    const notion = new NotionClient({ auth: token });
+
+    // Retrieve Page and Blocks
+    const page: any = await notion.pages.retrieve({ page_id: cleanId });
+    const title = extractTitleFromNotionPage(page);
+
+    const blocksResponse = await notion.blocks.children.list({ block_id: cleanId });
+    const pageText = extractTextFromNotionBlocks(blocksResponse.results);
+    const combinedContent = `제목: ${title}\n\n내용:\n${pageText}`;
+
+    // Use Gemini AI to structure into ExperienceBlock
+    const ai = getGeminiClient();
+    let notionSpec = {
+      projectName: title,
+      client: "내부 프로젝트",
+      company: "자체 프로젝트",
+      period: "2024",
+      contributionRate: 80,
+      role: "프로젝트 작성자",
+      keyOutcome: title,
+    };
+
+    let star = {
+      situation: pageText.slice(0, 200) || "노션 문서 기반 과제 분석",
+      task: "노션 문서 기반 해결 과제 정의",
+      action: "노션 문서 내 실행 내용 작성",
+      result: "노션 문서 기반 성과 측정",
+    };
+
+    let tagline = title;
+    let problemDefinition = pageText.slice(0, 150);
+
+    if (ai) {
+      try {
+        const prompt = `
+당신은 취업 및 이직용 웹 포트폴리오 빌더 AI 시스템입니다.
+다음은 사용자의 노션(Notion) 문서에서 가져온 프로젝트 기록 데이터입니다:
+
+=== 노션 원문 데이터 ===
+${combinedContent}
+
+이 데이터를 바탕으로 사용자의 포트폴리오 카드에 입력될 
+1) notionSpec (projectName, client, company, period, contributionRate, role, keyOutcome)
+2) STAR 기법 항목 (situation, task, action, result)
+3) tagline (핵심 한줄 요약)
+4) problemDefinition (문제 정의)
+를 추출하여 JSON 형식으로 작성해주세요.
+        `;
+
+        const aiResponse = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                notionSpec: {
+                  type: Type.OBJECT,
+                  properties: {
+                    projectName: { type: Type.STRING },
+                    client: { type: Type.STRING },
+                    company: { type: Type.STRING },
+                    period: { type: Type.STRING },
+                    contributionRate: { type: Type.NUMBER },
+                    role: { type: Type.STRING },
+                    keyOutcome: { type: Type.STRING },
+                  },
+                  required: ["projectName", "client", "company", "period", "contributionRate", "role", "keyOutcome"],
+                },
+                star: {
+                  type: Type.OBJECT,
+                  properties: {
+                    situation: { type: Type.STRING },
+                    task: { type: Type.STRING },
+                    action: { type: Type.STRING },
+                    result: { type: Type.STRING },
+                  },
+                  required: ["situation", "task", "action", "result"],
+                },
+                tagline: { type: Type.STRING },
+                problemDefinition: { type: Type.STRING },
+              },
+              required: ["notionSpec", "star", "tagline", "problemDefinition"],
+            },
+          },
+        });
+
+        const parsed = JSON.parse(aiResponse.text || "{}");
+        if (parsed.notionSpec) notionSpec = parsed.notionSpec;
+        if (parsed.star) star = parsed.star;
+        if (parsed.tagline) tagline = parsed.tagline;
+        if (parsed.problemDefinition) problemDefinition = parsed.problemDefinition;
+      } catch (aiErr) {
+        console.warn("AI parsing skipped, using fallback extraction:", aiErr);
+      }
+    }
+
+    const generatedBlock = {
+      id: `notion_blk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      jobCategory: jobCategory || "PM/PO",
+      isTop3: false,
+      isMasked: false,
+      notionSpec,
+      star,
+      fiveCards: {
+        card1_cover: {
+          tagline,
+          thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80",
+        },
+        card2_research: {
+          problemDefinition,
+          targetAudience: "노션 연동 유저",
+          userInsight: "노션 문서 기반 데이터 자동 가져오기",
+        },
+        card3_solutionAction1: {
+          title: "노션 통합 해결책 실행",
+          description: star.action,
+          techOrFrameworkUsed: "Notion API / AI Integration",
+        },
+        card4_solutionAction2: {
+          title: "주요 과제 해결 과정",
+          description: star.task,
+          frameworks: ["Notion", "Gemini AI"],
+        },
+        card5_impact: {
+          quantitativeMetrics: [
+            { label: "노션 연동 가공 완료", value: "100%" },
+          ],
+          qualitativeFeedback: star.result,
+        },
+      },
+    };
+
+    return res.json({ success: true, block: generatedBlock });
+  } catch (err: any) {
+    console.error("Error importing Notion page:", err);
+    return res.status(500).json({
+      error: "Failed to import Notion page",
+      message: err.message || "Failed to fetch page blocks from Notion API.",
+    });
+  }
+});
+
 
 // Server-side store for shared portfolios
 const sharedPortfoliosStore = new Map<string, { profile: any; blocks: any; createdAt: number }>();

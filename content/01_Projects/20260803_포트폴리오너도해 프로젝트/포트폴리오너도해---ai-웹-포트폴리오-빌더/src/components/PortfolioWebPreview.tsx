@@ -4,6 +4,8 @@ import { SmilingCatMascot } from './SmilingCatMascot';
 import { CaseStudyModal } from './CaseStudyModal';
 import { RecommendedSlideView } from './RecommendedSlideView';
 import { CardKeyVisualDropZone } from './CardKeyVisualDropZone';
+import { DeviceFrameMockup } from './DeviceFrameMockup';
+
 import {
   ExternalLink,
   Mail,
@@ -108,105 +110,145 @@ export const PortfolioWebPreview: React.FC<PortfolioWebPreviewProps> = ({
       </div>
 
       {/* Hero Section */}
-      <section className={`p-6 sm:p-10 ${currentTheme.cardBg} border-2 border-slate-900 rounded-3xl shadow-[6px_6px_0px_0px_#0A0A0A] mb-8`}>
-        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-            {/* Mascot Avatar */}
-            <div className="p-2 bg-[#FFF2E8] border-2 border-slate-900 rounded-3xl shadow-[3px_3px_0px_0px_#0A0A0A] shrink-0">
-              <SmilingCatMascot
-                size="xl"
-                style={profile.catPersona.style}
-                primaryColor={profile.catPersona.primaryColor || currentTheme.accent}
-                showBubble
-                quote={profile.catPersona.catQuote}
-              />
+      <section className={`p-6 sm:p-10 ${currentTheme.cardBg} border-2 border-slate-900 rounded-3xl shadow-[6px_6px_0px_0px_#0A0A0A] mb-8 overflow-hidden`}>
+        {/* Top Award / Institution Badges Cluster */}
+        {profile.awardBadges && profile.awardBadges.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {profile.awardBadges.map((badge, idx) => (
+              <span
+                key={idx}
+                className="px-3 py-1 bg-slate-900 text-amber-300 font-black text-xs rounded-xl border border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5"
+              >
+                🏆 {badge}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          {/* Left Column: Bio & Persona */}
+          <div className="lg:col-span-7 space-y-4 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="p-2 bg-[#FFF2E8] border-2 border-slate-900 rounded-3xl shadow-[3px_3px_0px_0px_#0A0A0A] shrink-0">
+                <SmilingCatMascot
+                  size="xl"
+                  style={profile.catPersona.style}
+                  primaryColor={profile.catPersona.primaryColor || currentTheme.accent}
+                  showBubble
+                  quote={profile.catPersona.catQuote}
+                />
+              </div>
+
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2EB0A6] text-white text-xs font-black rounded-full border border-slate-900 shadow-[1px_1px_0px_0px_#0A0A0A] mb-2">
+                  <Sparkles className="w-3.5 h-3.5" /> {profile.roleTitle}
+                </div>
+
+                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mb-2">
+                  {profile.name}
+                </h1>
+
+                <p className="text-sm sm:text-base font-bold text-slate-700 max-w-xl leading-relaxed">
+                  "{profile.catPersona.slogan}"
+                </p>
+              </div>
             </div>
 
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2EB0A6] text-white text-xs font-black rounded-full border border-slate-900 shadow-[1px_1px_0px_0px_#0A0A0A] mb-2">
-                <Sparkles className="w-3.5 h-3.5" /> {profile.roleTitle}
+            {/* Competency Chips */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+              {profile.catPersona.competencies.map((chip, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-full border border-slate-900 shadow-[1px_1px_0px_0px_#0A0A0A]"
+                >
+                  #{chip}
+                </span>
+              ))}
+            </div>
+
+            {/* Impact Metric Badges (Visual Badges) */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+              <div className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0A0A0A]">
+                <span className="text-[10px] font-bold text-emerald-100 block uppercase">
+                  {profile.heroMetric1 || '구매 전환율 (CVR)'}
+                </span>
+                <span className="text-xl font-black tracking-tight">
+                  {profile.heroMetric1Val || '+35.2%'}
+                </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mb-2">
-                {profile.name}
-              </h1>
-
-              <p className="text-sm sm:text-base font-bold text-slate-700 max-w-2xl leading-relaxed mb-4">
-                "{profile.catPersona.slogan}"
-              </p>
-
-              {/* Competency Chips */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 mb-3">
-                {profile.catPersona.competencies.map((chip, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-slate-100 text-slate-800 font-extrabold text-xs rounded-full border border-slate-900 shadow-[1px_1px_0px_0px_#0A0A0A]"
-                  >
-                    #{chip}
-                  </span>
-                ))}
+              <div className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0A0A0A]">
+                <span className="text-[10px] font-bold text-indigo-100 block uppercase">
+                  {profile.heroMetric2 || '평균 기여도'}
+                </span>
+                <span className="text-xl font-black tracking-tight">
+                  {profile.heroMetric2Val || '85%'}
+                </span>
               </div>
+            </div>
 
-              {/* AI Extracted Project Keywords Visual Bar */}
-              {selectedBlocks.length > 0 && (
-                <div className="p-3 bg-[#FFFAF0] border-2 border-slate-900 rounded-2xl shadow-[2px_2px_0px_0px_#0A0A0A] inline-block">
-                  <span className="text-[10px] font-black text-slate-600 block mb-1">
-                    ✨ 작성 프로젝트 기반 AI 추출 대표 키워드
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedBlocks.flatMap((b) => [
-                      b.notionSpec.role,
-                      ...((b.star.action + ' ' + b.notionSpec.keyOutcome).match(/(CVR|이탈률|A\/B테스트|Agile|Figma|React|TypeScript|SQL|GA4|Mixpanel|개선|증가|달성)/gi) || [])
-                    ])
-                      .filter(Boolean)
-                      .slice(0, 6)
-                      .map((kw, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 bg-[#2EB0A6] text-white font-extrabold text-[10px] rounded-md border border-slate-900"
-                        >
-                          ⚡ {kw}
-                        </span>
-                      ))}
-                  </div>
-                </div>
+            {/* Social Links */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-2">
+              {profile.email && (
+                <a
+                  href={`mailto:${profile.email}`}
+                  className="px-3 py-1.5 bg-white text-slate-900 font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5 hover:bg-slate-50"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#2EB0A6]" /> {profile.email}
+                </a>
+              )}
+              {profile.githubUrl && (
+                <a
+                  href={profile.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 bg-slate-900 text-white font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5"
+                >
+                  <Github className="w-3.5 h-3.5" /> GitHub
+                </a>
               )}
             </div>
           </div>
 
-          {/* Social Contact Buttons */}
-          <div className="flex flex-wrap md:flex-col items-center justify-center gap-2 shrink-0">
-            {profile.email && (
-              <a
-                href={`mailto:${profile.email}`}
-                className="px-3.5 py-2 bg-white text-slate-900 font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5 hover:bg-slate-50"
-              >
-                <Mail className="w-3.5 h-3.5 text-[#2EB0A6]" /> {profile.email}
-              </a>
-            )}
-            {profile.githubUrl && (
-              <a
-                href={profile.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-3.5 py-2 bg-slate-900 text-white font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5"
-              >
-                <Github className="w-3.5 h-3.5" /> GitHub
-              </a>
-            )}
-            {profile.blogUrl && (
-              <a
-                href={profile.blogUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-3.5 py-2 bg-[#FF4D8B] text-white font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5"
-              >
-                <Globe className="w-3.5 h-3.5" /> Blog / Portfolio
-              </a>
-            )}
+          {/* Right Column: Key Visual Device Mockup with Floating Stickers */}
+          <div className="lg:col-span-5 flex justify-center">
+            <DeviceFrameMockup
+              frameStyle={profile.coverFrameStyle || 'macbook'}
+              imageUrl={profile.coverImageUrl || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80'}
+              floatingStickers={profile.floatingStickers}
+              alt={`${profile.name} Portfolio Key Visual`}
+            />
           </div>
+
         </div>
+
+        {/* Process Flow Steps Bar */}
+        {profile.processSteps && profile.processSteps.length > 0 && (
+          <div className="mt-8 pt-6 border-t-2 border-slate-900/20">
+            <span className="text-[11px] font-black text-slate-500 block mb-2 uppercase tracking-wider">
+              📊 프로젝트 리서치 & 개발 프로세스 (Research Process Flow)
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {profile.processSteps.map((step, idx) => (
+                <React.Fragment key={idx}>
+                  <span className="px-3 py-1.5 bg-white text-slate-900 font-extrabold text-xs rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0A0A0A] flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-[#2EB0A6] text-white text-[10px] font-black flex items-center justify-center">
+                      {idx + 1}
+                    </span>
+                    {step}
+                  </span>
+                  {idx < profile.processSteps!.length - 1 && (
+                    <span className="text-slate-400 font-black text-xs">→</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
+
+
 
       {/* VIEW MODE 1: Bento Grid Gallery */}
       {viewMode === 'bento' && (

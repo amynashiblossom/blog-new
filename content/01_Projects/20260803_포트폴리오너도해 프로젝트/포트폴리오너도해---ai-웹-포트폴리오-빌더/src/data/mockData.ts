@@ -19,9 +19,45 @@ export const INITIAL_USER_PROFILE: UserProfile = {
   },
   selectedTheme: "cream",
   viewMode: "bento",
+  coverFrameStyle: "macbook",
+  coverImageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80",
+  heroMetric1: "구매 전환율 (CVR)",
+  heroMetric1Val: "+35.2%",
+  heroMetric2: "평균 기여도",
+  heroMetric2Val: "85%",
+  awardBadges: [
+    "과학기술정보통신부 주관 최우수상",
+    "K-DESIGN AWARD 24 WINNER",
+    "한국디자인학회 ADR 논문 게재"
+  ],
+  processSteps: [
+    "사용자 조사",
+    "핵심 인사이트 도출",
+    "아이디어 맵 작성",
+    "UX/UI 설계",
+    "프로토타입 개발",
+    "사용성 검증"
+  ],
+  floatingStickers: [
+    "너무 화나! 😤",
+    "깜짝이야! ⚡",
+    "불안해 💦",
+    "행복해요 🥰",
+    "CVR +35.2% 📈"
+  ],
   isConfidentialMasked: false,
-  accessLevel: "public"
+
+
+  accessLevel: "public",
+  sectionConfigs: [
+    { id: 'hero', title: '프로필 & 페르소나', enabled: true },
+    { id: 'competencies', title: '핵심 역량 & 스킬 칩', enabled: true },
+    { id: 'projects', title: '주요 프로젝트 경험', enabled: true },
+    { id: 'case_study', title: '상세 케이스 스터디 슬라이드', enabled: true },
+    { id: 'contact', title: '연락처 & 소셜 푸터', enabled: true }
+  ]
 };
+
 
 export const SAMPLE_EXPERIENCE_BLOCKS: ExperienceBlock[] = [
   {

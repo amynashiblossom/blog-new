@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExperienceBlock, JobCategory, NotionTableSpec, FiveCardStructure } from '../types';
 import { ImageDragDropZone } from './ImageDragDropZone';
 import { RecommendedSlideView } from './RecommendedSlideView';
+import { NotionImportModal } from './NotionImportModal';
 import {
   Plus,
   Search,
@@ -19,8 +20,10 @@ import {
   HelpCircle,
   AlertTriangle,
   Upload,
-  Image
+  Image,
+  Database
 } from 'lucide-react';
+
 
 interface BlockVaultViewProps {
   blocks: ExperienceBlock[];
@@ -44,7 +47,9 @@ export const BlockVaultView: React.FC<BlockVaultViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(isAddModalOpenInitially);
+  const [isNotionModalOpen, setIsNotionModalOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ExperienceBlock | null>(null);
+
 
   // Form State
   const [formCategory, setFormCategory] = useState<JobCategory>(selectedCategory);
@@ -315,13 +320,23 @@ export const BlockVaultView: React.FC<BlockVaultViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="px-4 py-2.5 bg-[#2EB0A6] text-white font-black text-xs sm:text-sm rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#0A0A0A] transition-all flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" /> 새 경험 블록 작성하기
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setIsNotionModalOpen(true)}
+            className="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#0A0A0A] transition-all flex items-center gap-2"
+          >
+            <Database className="w-4 h-4 text-indigo-200" /> 노션 데이터 불러오기
+          </button>
+
+          <button
+            onClick={openCreateModal}
+            className="px-4 py-2.5 bg-[#2EB0A6] text-white font-black text-xs sm:text-sm rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#0A0A0A] transition-all flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> 새 경험 블록 작성하기
+          </button>
+        </div>
       </div>
+
 
       {/* Filter and Search Bar */}
       <div className="p-4 bg-white border-2 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_#0A0A0A] flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -855,6 +870,17 @@ export const BlockVaultView: React.FC<BlockVaultViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Notion Integration Modal */}
+      <NotionImportModal
+        isOpen={isNotionModalOpen}
+        onClose={() => setIsNotionModalOpen(false)}
+        onImportBlock={(block) => {
+          onAddBlock(block);
+        }}
+        selectedCategory={selectedCategory}
+      />
     </div>
   );
 };
+
