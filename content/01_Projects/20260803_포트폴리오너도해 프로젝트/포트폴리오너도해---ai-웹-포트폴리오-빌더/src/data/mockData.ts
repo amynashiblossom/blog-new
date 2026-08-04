@@ -61,8 +61,63 @@ export const INITIAL_USER_PROFILE: UserProfile = {
 
 export const SAMPLE_EXPERIENCE_BLOCKS: ExperienceBlock[] = [
   {
+    id: "block-gutgu-1",
+    jobCategory: "pm",
+    notionSpec: {
+      projectName: "급구 - 초단기 구인구직 플랫폼 매칭 UX/UI 개편",
+      client: "급구 (B2C/B2B 매칭 서비스)",
+      company: "(주)니더 (급구 운영사)",
+      period: "2024.08 ~ 2025.01 (6개월)",
+      contributionRate: 90,
+      role: "리드 PM & UX/UI 메인 기획자",
+      keyOutcome: "매칭 성공률 +42% 상승 및 이탈률 -25% 감소"
+    },
+    fiveCards: {
+      card1_cover: {
+        thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80",
+        keyVisualDescription: "급구 아르바이트 초단기 매칭 화면 캡처 및 메인 대시보드",
+        tagline: "급구 - 30초 내 초단기 인재 매칭 UX/UI 프로세스 혁신"
+      },
+      card2_research: {
+        context: "급구 플랫폼 내 초단기 아르바이트 신청 시 복잡한 절차로 인한 유저 이탈 발생",
+        targetUser: "초단기 구직자 & 급하게 인력이 필요한 자영업자/기업 사장님",
+        problemDefinition: "매칭 신청 단계가 5단계로 복잡하여 35% 유저가 지원 중 포기",
+        hypothesis: "원클릭 간편 지원 프로세스 및 시각적 매칭 뱃지 도입 시 신청 완료율 +30% 향상 가능"
+      },
+      card3_solutionAction1: {
+        title: "Action 1: 급구 원클릭 지원 프로세스 구축",
+        actionDetail: "불필요한 입력 3단계를 축소하고 지원자 동선 1초 간소화",
+        techOrFrameworkUsed: "Agile, Figma, A/B Testing, GA4"
+      },
+      card4_solutionAction2: {
+        title: "Action 2: 매칭 알고리즘 뱃지 및 실시간 알림 피드백",
+        actionDetail: "사장님 수락 시 지원자에게 3초 내 푸시 알림 및 상태 카드 노출",
+        keyDecisionPoint: "지원자 수락 대기시간의 불확실성을 시각적 피드백으로 즉시 해결"
+      },
+      card5_impact: {
+        quantitativeMetrics: [
+          { label: "매칭 성공률", value: "+42.5%", changePercentage: "상승" },
+          { label: "지원 포기율", value: "-25.0%", changePercentage: "감소" }
+        ],
+        qualitativeFeedback: "급구 사용자 및 사장님 만족도 4.8점 달성."
+      }
+    },
+    star: {
+      situation: "급구 아르바이트 매칭 시 복잡한 서류 절차로 이탈률이 높던 상황",
+      task: "구인구직 매칭 완료율 향상 및 지원 동선 1초 간소화",
+      action: "원클릭 빠른 지원 UX 설계 및 실시간 매칭 상태 피드백 알림 구축",
+      result: "매칭 성공률 +42% 달성 및 유저 이탈률 25% 감소"
+    },
+    skills: ["급구", "UX/UI", "매칭 알고리즘", "A/B 테스트", "유저 데이터 분석"],
+    isMasked: false,
+    selectedForPortfolio: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
     id: "block-pm-1",
     jobCategory: "pm",
+
     notionSpec: {
       projectName: "커머스 플랫폼 이탈률 개선 및 결제 UX 개편",
       client: "내부 서비스 (B2C 커머스)",

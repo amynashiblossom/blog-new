@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { SecurityBanner } from './components/SecurityBanner';
+import { EvidenceGuideBanner } from './components/EvidenceGuideBanner';
+
 import { SecurityModal } from './components/SecurityModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { PortfolioWebPreview } from './components/PortfolioWebPreview';
@@ -11,6 +13,7 @@ import { BlockVaultView } from './components/BlockVaultView';
 import { PortfolioBuilderView } from './components/PortfolioBuilderView';
 import { AIDiagnosisView } from './components/AIDiagnosisView';
 import { CommunityView } from './components/CommunityView';
+import { JobArchiveView } from './components/JobArchiveView';
 import { ExternalLink, Sparkles, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 import {
@@ -264,6 +267,10 @@ export default function App() {
         onOpenSecurityModal={() => setIsSecurityModalOpen(true)}
       />
 
+      {/* Rationale-based Portfolio Guide Banner (Always Visible across all tabs) */}
+      <EvidenceGuideBanner />
+
+
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'shared-portfolio' && (
@@ -389,6 +396,10 @@ export default function App() {
             references={SAMPLE_COMMUNITY_REFERENCES}
             onImportTemplate={handleImportTemplate}
           />
+        )}
+
+        {activeTab === 'job-archive' && (
+          <JobArchiveView />
         )}
       </main>
 

@@ -9,7 +9,8 @@ import {
   Users,
   ShieldCheck,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Bookmark
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -41,6 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'dashboard', label: '대시보드', icon: LayoutDashboard },
     { id: 'vault', label: '경험 보관함', icon: FolderKanban },
     { id: 'builder', label: '포트폴리오 빌더', icon: Wand2, highlight: true },
+    { id: 'job-archive', label: '채용공고 스크랩 & AI 매칭', icon: Bookmark, highlight: true },
     { id: 'ai-diagnosis', label: 'AI 역량 진단', icon: BrainCircuit },
     { id: 'community', label: '커뮤니티', icon: Users },
   ];
