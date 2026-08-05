@@ -1,0 +1,6 @@
+{
+  "name": "커리어핏 (CareerFit) - 스마트 채용공고 스크랩북 & JD 아카이빙",
+  "description": "URL 한 줄로 채용공고 파싱, AI JD 핵심 키워드 분석, 내 이력서 매칭 점수 진단, 지원 상태 칸반 보드 및 D-Day 타임라인 아카이빙 플랫폼",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
