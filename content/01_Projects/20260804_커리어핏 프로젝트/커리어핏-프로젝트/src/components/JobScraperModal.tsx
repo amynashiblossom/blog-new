@@ -68,10 +68,19 @@ export const JobScraperModal: React.FC<JobScraperModalProps> = ({
         })
       });
 
-      const json = await response.json();
+      const resText = await response.text();
+      let json: any = {};
+      try {
+        json = JSON.parse(resText);
+      } catch (parseError) {
+        if (!response.ok) {
+          throw new Error(`서버 응답 오류가 발생했습니다 (HTTP ${response.status}). Vercel 환경변수(GEMINI_API_KEY) 설정 및 서버 로그를 확인해 주세요.`);
+        }
+        throw new Error('응답 데이터를 파싱하지 못했습니다.');
+      }
 
-      if (!json.success || !json.data) {
-        throw new Error(json.error || '공고 정보를 분석하지 못했습니다.');
+      if (!response.ok || !json.success || !json.data) {
+        throw new Error(json.error || `공고 파싱 처리 중 오류가 발생했습니다 (HTTP ${response.status}).`);
       }
 
       setParsedData(json.data);
@@ -142,10 +151,26 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
+
+          {/* Always Visible Recommendation Banner */}
+          <div className="p-3.5 bg-[#FAF5E8] border-2 border-amber-300 rounded-xl text-xs font-bold text-amber-950 flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📌</span>
+              <span>안정적인 공고 분석을 위해 <strong className="text-amber-900 underline underline-offset-2">JD 텍스트를 컴퓨터상에서 직접 긁어붙이시는 것을 추천드립니다!</strong></span>
+            </div>
+            {tab === 'url' && (
+              <button
+                onClick={() => setTab('text')}
+                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-extrabold transition-all shadow-2xs shrink-0 cursor-pointer"
+              >
+                텍스트 붙여넣기로 이동 ➔
+              </button>
+            )}
+          </div>
 
           {/* Preset Buttons for Quick Testing */}
-          <div className="bg-[#E6F7F5]/60 border border-[#2EB0A6]/30 p-3.5 rounded-xl space-y-2">
+          <div className="bg-[#E6F7F5]/60 border border-[#2EB0A6]/30 p-3 rounded-xl space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-[#2EB0A6]">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 fill-current text-[#2EB0A6]" />
@@ -235,7 +260,7 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
               }`}
             >
               <FileText className="w-4 h-4" />
-              <span>공고 텍스트(JD) 직접 붙여넣기</span>
+              <span>공고 텍스트(JD) 직접 붙여넣기 (추천 ⭐)</span>
             </button>
             <button
               onClick={() => setTab('url')}
@@ -296,25 +321,44 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl text-xs text-amber-900 flex flex-col gap-1.5">
-                <div className="flex items-center justify-between font-bold text-amber-950">
-                  <span>💡 채용 공고 URL 입력 예시:</span>
+            <div className="space-y-4">
+              
+              {/* Permanent Visible LinkedIn Guide Image Card */}
+              <div className="bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[#0A0A0A] flex items-center gap-1.5">
+                    <Globe className="w-4 h-4 text-[#2EB0A6]" />
+                    <span>LinkedIn 채용공고 [링크 복사] 가져오는 법 (상시 가이드)</span>
+                  </span>
                   <button
                     onClick={() => {
                       setUrl('https://www.linkedin.com/jobs/view/4445699622/');
                     }}
-                    className="px-2 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded-md font-bold text-[11px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded-md font-bold text-[11px] transition-colors cursor-pointer"
                   >
-                    링크드인 예시 URL 자동 채우기
+                    링크드인 예시 URL 채우기
                   </button>
                 </div>
-                <code className="text-[11px] bg-white/90 p-1.5 rounded border border-amber-200 font-mono break-all text-amber-900 font-semibold">
-                  https://www.linkedin.com/jobs/view/4445699622/
-                </code>
-                <p className="text-[11px] text-amber-800">
-                  * 링크드인, 원티드, 사람인, 잡코리아 등의 [링크 복사] URL을 붙여넣으시면 AI가 공고 정보를 자동 분석합니다.
-                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                  <div className="relative rounded-lg overflow-hidden border border-[#EAE5DC] shadow-xs bg-white">
+                    <img 
+                      src="/linkedin-guide.png" 
+                      alt="LinkedIn 링크 복사 가이드" 
+                      className="w-full h-auto object-cover max-h-40"
+                    />
+                  </div>
+                  <div className="space-y-1.5 text-xs text-[#3A3A3A]">
+                    <p className="font-bold text-[#0A0A0A]">📋 링크 복사 2단계:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-[11px]">
+                      <li>공고 오른쪽 상단 <strong className="text-[#0A0A0A]">··· (더보기)</strong> 버튼 클릭</li>
+                      <li>메뉴에서 <strong className="text-[#2EB0A6] bg-[#E6F7F5] px-1 py-0.5 rounded">🔗 링크 복사</strong> 클릭 후 아래에 붙여넣기</li>
+                    </ol>
+                    <p className="text-[10px] text-[#6A6A6A] pt-1">
+                      * 취업 플랫폼 보안 정책에 따라 URL 분석 실패 시 <strong>'JD 텍스트 직접 붙여넣기'</strong>를 권장합니다.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <label className="block text-xs font-semibold text-[#3A3A3A]">

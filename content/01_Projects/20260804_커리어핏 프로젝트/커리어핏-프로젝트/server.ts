@@ -6,21 +6,26 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentDirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// Initialize Gemini Client
+// Initialize Gemini Client safely
 let aiClient: GoogleGenAI | null = null;
-function getGeminiClient() {
+function getGeminiClient(): GoogleGenAI | null {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim() === '') {
+    console.warn("GEMINI_API_KEY가 등록되지 않았거나 비어있습니다. 기본 규칙 기반으로 대체 파싱합니다.");
+    return null;
+  }
   if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn("GEMINI_API_KEY가 등록되지 않았습니다. 기본 규칙 기반으로 대체 파싱합니다.");
+    try {
+      aiClient = new GoogleGenAI({ apiKey });
+    } catch (err) {
+      console.error("GoogleGenAI 초기화 실패:", err);
+      return null;
     }
-    aiClient = new GoogleGenAI({});
   }
   return aiClient;
 }
@@ -109,8 +114,9 @@ Johnson & Johnson MedTech는 전 세계 의료진과 환자를 위한 최첨단 
     }
 
     const ai = getGeminiClient();
-    if (process.env.GEMINI_API_KEY) {
-      const prompt = `
+    if (ai) {
+      try {
+        const prompt = `
 당신은 IT/채용 전문 JD 파서입니다. 아래 채용공고 입력(URL 및 내용)에서 주요 정보를 분석/추출하여 반드시 지정된 JSON 구조로만 응답하세요.
 
 [채용공고 입력]
@@ -134,39 +140,39 @@ ${inputText}
 11. fullRawText: 공고 전체 원문 상세 텍스트. (위에서 추출한 주요 업무, 필수 자격요건, 우대 사항, 전형 절차 및 회사 소개를 포함하여 생략이나 축약 없이 가독성 높게 전체 보존된 텍스트)
       `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              companyName: { type: Type.STRING },
-              title: { type: Type.STRING },
-              position: { type: Type.STRING },
-              dueDate: { type: Type.STRING },
-              tasks: { type: Type.ARRAY, items: { type: Type.STRING } },
-              requirements: { type: Type.ARRAY, items: { type: Type.STRING } },
-              preferred: { type: Type.ARRAY, items: { type: Type.STRING } },
-              keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              location: { type: Type.STRING },
-              salary: { type: Type.STRING },
-              fullRawText: { type: Type.STRING }
-            },
-            required: ['companyName', 'title', 'position', 'dueDate', 'tasks', 'requirements', 'keywords', 'fullRawText']
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                companyName: { type: Type.STRING },
+                title: { type: Type.STRING },
+                position: { type: Type.STRING },
+                dueDate: { type: Type.STRING },
+                tasks: { type: Type.ARRAY, items: { type: Type.STRING } },
+                requirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+                preferred: { type: Type.ARRAY, items: { type: Type.STRING } },
+                keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                location: { type: Type.STRING },
+                salary: { type: Type.STRING },
+                fullRawText: { type: Type.STRING }
+              },
+              required: ['companyName', 'title', 'position', 'dueDate', 'tasks', 'requirements', 'keywords', 'fullRawText']
+            }
           }
-        }
-      });
+        });
 
-      const parsedJson = JSON.parse(response.text || '{}');
-      
-      // 구성을 확실히 보장하기 위한 원문 가공
-      const formattedTasks = (parsedJson.tasks || []).map((t: string) => `- ${t}`).join('\n');
-      const formattedReqs = (parsedJson.requirements || []).map((r: string) => `- ${r}`).join('\n');
-      const formattedPref = (parsedJson.preferred || []).map((p: string) => `- ${p}`).join('\n');
-      
-      const fallbackFullText = `[${parsedJson.companyName || '스크랩 기업'}] ${parsedJson.title || '채용공고'}
+        const parsedJson = JSON.parse(response.text || '{}');
+        
+        // 구성을 확실히 보장하기 위한 원문 가공
+        const formattedTasks = (parsedJson.tasks || []).map((t: string) => `- ${t}`).join('\n');
+        const formattedReqs = (parsedJson.requirements || []).map((r: string) => `- ${r}`).join('\n');
+        const formattedPref = (parsedJson.preferred || []).map((p: string) => `- ${p}`).join('\n');
+        
+        const fallbackFullText = `[${parsedJson.companyName || '스크랩 기업'}] ${parsedJson.title || '채용공고'}
 직무: ${parsedJson.position || '직무 미정'} | 근무지: ${parsedJson.location || '미정'} | 연봉: ${parsedJson.salary || '채용시 협의'}
 마감일: ${parsedJson.dueDate || '데드라인 미정 (상시/채용시 마감)'}
 
@@ -183,19 +189,22 @@ ${formattedPref || '- 우대 사항 참조'}
 ${(parsedJson.keywords || []).map((k: string) => `#${k}`).join(' ')}
 ${url ? `\n\n원본 공고 URL: ${url}` : ''}`;
 
-      const finalRawText = parsedJson.fullRawText && parsedJson.fullRawText.length > 50
-        ? parsedJson.fullRawText
-        : fallbackFullText;
+        const finalRawText = parsedJson.fullRawText && parsedJson.fullRawText.length > 50
+          ? parsedJson.fullRawText
+          : fallbackFullText;
 
-      return res.json({
-        success: true,
-        data: {
-          ...parsedJson,
-          rawText: finalRawText,
-          originalUrl: url || '',
-          scrapedAt: new Date().toISOString().split('T')[0]
-        }
-      });
+        return res.json({
+          success: true,
+          data: {
+            ...parsedJson,
+            rawText: finalRawText,
+            originalUrl: url || '',
+            scrapedAt: new Date().toISOString().split('T')[0]
+          }
+        });
+      } catch (geminiErr: any) {
+        console.error("Gemini API 파싱 중 오류 발생 (기본 파싱으로 자동 대체):", geminiErr);
+      }
     }
 
     // Fallback if no Gemini API Key
@@ -251,8 +260,9 @@ app.post('/api/analyze-match', async (req, res) => {
       : '첨부된 파일 원문 텍스트 없음';
 
     const ai = getGeminiClient();
-    if (process.env.GEMINI_API_KEY) {
-      const prompt = `
+    if (ai) {
+      try {
+        const prompt = `
 당신은 최고의 헤드헌터 및 채용 컨설턴트 AI입니다.
 아래 [공고 전체 상세 내용]과 구직자의 [드래그 첨부한 이력서/경력기술서 서류 내용]을 정밀 비교분석해주세요.
 
@@ -291,33 +301,36 @@ ${attachedFilesText}
 - interviewPrepQuestions: 공고 전체 내용과 내 경력 기준 예상 면접 질문 2개
       `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              matchScore: { type: Type.INTEGER },
-              summary: { type: Type.STRING },
-              matchedPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-              improvementPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-              matchedKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-              resumeImprovementTips: { type: Type.ARRAY, items: { type: Type.STRING } },
-              interviewPrepQuestions: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ['matchScore', 'summary', 'matchedPoints', 'improvementPoints', 'matchedKeywords', 'missingKeywords', 'resumeImprovementTips', 'interviewPrepQuestions']
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                matchScore: { type: Type.INTEGER },
+                summary: { type: Type.STRING },
+                matchedPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                improvementPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                matchedKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                resumeImprovementTips: { type: Type.ARRAY, items: { type: Type.STRING } },
+                interviewPrepQuestions: { type: Type.ARRAY, items: { type: Type.STRING } }
+              },
+              required: ['matchScore', 'summary', 'matchedPoints', 'improvementPoints', 'matchedKeywords', 'missingKeywords', 'resumeImprovementTips', 'interviewPrepQuestions']
+            }
           }
-        }
-      });
+        });
 
-      const analysisData = JSON.parse(response.text || '{}');
-      return res.json({
-        success: true,
-        data: analysisData
-      });
+        const analysisData = JSON.parse(response.text || '{}');
+        return res.json({
+          success: true,
+          data: analysisData
+        });
+      } catch (geminiErr: any) {
+        console.error("Gemini API 매칭 분석 중 오류 발생 (기본 매칭으로 자동 대체):", geminiErr);
+      }
     }
 
     // Fallback simulation
@@ -363,17 +376,17 @@ ${attachedFilesText}
 
 // Setup Vite or Serve Static Files (로컬 및 단독 서버 전용)
 async function setupServer() {
-  const PORT = process.env.PORT || 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      server: { middlewareMode: true, port: Number(PORT), host: '0.0.0.0' },
+      server: { middlewareMode: true, port: PORT, host: '0.0.0.0' },
       appType: 'spa'
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(__dirname, 'dist');
+    const distPath = path.resolve(currentDirname, 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.resolve(distPath, 'index.html'));

@@ -119,7 +119,15 @@ export default function App() {
         })
       });
 
-      const json = await response.json();
+      const resText = await response.text();
+      let json: any = {};
+      try {
+        json = JSON.parse(resText);
+      } catch (e) {
+        console.error('Failed to parse analyze-match response:', e);
+        return;
+      }
+
       if (json.success && json.data) {
         setJobs((prev) =>
           prev.map((j) =>
