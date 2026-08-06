@@ -562,7 +562,12 @@ async function setupServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(currentDirname, 'dist');
+    let distPath = path.resolve(currentDirname, 'dist');
+    if (currentDirname.endsWith('dist')) {
+      distPath = currentDirname;
+    } else if (currentDirname.endsWith('api')) {
+      distPath = path.resolve(currentDirname, '../dist');
+    }
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
@@ -579,4 +584,3 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
-
