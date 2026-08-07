@@ -246,36 +246,63 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
               const dayNum = i + 1;
               const dateStr = `2026-08-${dayNum < 10 ? '0' + dayNum : dayNum}`;
               const dayJobs = jobs.filter((j) => j.dueDate === dateStr);
+              const daySchedules = jobs.flatMap((j) =>
+                (j.customSchedules || [])
+                  .filter((s) => s.date === dateStr)
+                  .map((s) => ({ job: j, schedule: s }))
+              );
+
+              const hasEvent = dayJobs.length > 0 || daySchedules.length > 0;
+              const eventCount = dayJobs.length + daySchedules.length;
+              const isSunday = dayNum % 7 === 2;
+              const isSaturday = dayNum % 7 === 1;
 
               return (
                 <div
                   key={dayNum}
-                  className={`min-h-[90px] p-1.5 border rounded-xl flex flex-col justify-between transition-all ${
-                    dayJobs.length > 0
+                  className={`min-h-[110px] p-1.5 border rounded-xl flex flex-col justify-between transition-all ${
+                    hasEvent
                       ? 'border-[#2EB0A6] bg-[#E6F7F5]/30'
                       : 'border-[#EAE5DC] bg-[#FAF5E8]/30'
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className={`font-bold ${dayNum % 7 === 2 ? 'text-red-500' : 'text-[#0A0A0A]'}`}>
+                    <span
+                      className={`font-bold ${
+                        isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : 'text-[#0A0A0A]'
+                      }`}
+                    >
                       {dayNum}
                     </span>
-                    {dayJobs.length > 0 && (
+                    {eventCount > 0 && (
                       <span className="px-1.5 py-0.2 text-[10px] bg-[#2EB0A6] text-white font-bold rounded-full">
-                        {dayJobs.length}
+                        {eventCount}
                       </span>
                     )}
                   </div>
 
-                  <div className="space-y-1 my-1 overflow-hidden">
+                  <div className="space-y-1 my-1 overflow-hidden flex-1">
+                    {/* 마감일 공고 */}
                     {dayJobs.map((j) => (
                       <div
-                        key={j.id}
+                        key={`due-${j.id}`}
                         onClick={() => onSelectJob(j)}
-                        className="bg-white hover:bg-[#2EB0A6] hover:text-white p-1 rounded border border-[#2EB0A6]/40 text-[10px] font-bold text-[#0A0A0A] truncate cursor-pointer transition-colors"
-                        title={`${j.companyName} - ${j.title}`}
+                        className="bg-red-50 hover:bg-red-500 hover:text-white p-1 rounded border border-red-200 text-[10px] font-bold text-red-700 truncate cursor-pointer transition-colors"
+                        title={`[마감] ${j.companyName} - ${j.title}`}
                       >
-                        {j.companyName}
+                        🔴 마감: {j.companyName}
+                      </div>
+                    ))}
+
+                    {/* 커스텀 전형 일정 */}
+                    {daySchedules.map(({ job: j, schedule: s }) => (
+                      <div
+                        key={`sched-${s.id}`}
+                        onClick={() => onSelectJob(j)}
+                        className="bg-blue-50 hover:bg-blue-500 hover:text-white p-1 rounded border border-blue-200 text-[10px] font-bold text-blue-700 truncate cursor-pointer transition-colors"
+                        title={`[${s.title}] ${j.companyName} - ${j.title}`}
+                      >
+                        📅 {s.title}: {j.companyName}
                       </div>
                     ))}
                   </div>

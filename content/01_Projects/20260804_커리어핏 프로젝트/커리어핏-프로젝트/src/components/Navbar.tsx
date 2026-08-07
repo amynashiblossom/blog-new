@@ -7,7 +7,8 @@ import {
   Sparkles, 
   PlusCircle, 
   Search,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ShieldCheck
 } from 'lucide-react';
 import { JobPost } from '../types';
 
@@ -107,11 +108,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Action Button - Apple Style Tactile Primary */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Action Button - Gemini AI Integration & Primary Action */}
+          <div className="flex items-center gap-2 shrink-0 relative">
+            <div className="px-2.5 py-1.5 bg-gradient-to-r from-[#E6F7F5] to-amber-50 border border-[#2EB0A6]/40 rounded-xl flex items-center gap-1.5 text-xs font-bold text-[#2EB0A6]">
+              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
+              <span className="hidden sm:inline">✨ Gemini 2.5 AI 연동</span>
+              <span className="text-[10px] text-gray-500 font-normal hidden lg:inline">(.env 자동적용)</span>
+            </div>
+
             <button
               onClick={onOpenScraper}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#2EB0A6] hover:bg-[#228B83] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-[#2EB0A6]/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2EB0A6] whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#2EB0A6] hover:bg-[#228B83] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-[#2EB0A6]/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2EB0A6] whitespace-nowrap cursor-pointer"
             >
               <PlusCircle className="w-4 h-4 shrink-0" />
               <span className="hidden xs:inline">공고(JD) 붙여넣기 스크랩</span>

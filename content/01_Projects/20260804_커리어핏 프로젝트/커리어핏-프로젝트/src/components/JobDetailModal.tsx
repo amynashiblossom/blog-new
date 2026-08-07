@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { JobPost, ApplicationStatus, UserResume, ResumeFile } from '../types';
+import { JobPost, ApplicationStatus, UserResume, ResumeFile, CustomSchedule } from '../types';
 import { formatDueDateLabel } from '../utils/dateUtils';
 import { 
   X, 
@@ -37,6 +37,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
   onClose,
   onStatusChange,
   onUpdateMemo,
+  onUpdateSchedules,
   onDeleteJob,
   onAnalyzeMatch,
   onSaveResume
@@ -45,6 +46,26 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
 
   const [memo, setMemo] = useState(job.memo || '');
   const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const [scheduleTitle, setScheduleTitle] = useState('');
+  const [scheduleDate, setScheduleDate] = useState('');
+
+  const handleAddSchedule = () => {
+    if (!scheduleTitle.trim() || !scheduleDate) return;
+    const newSchedule: CustomSchedule = {
+      id: `schedule-${Date.now()}`,
+      title: scheduleTitle.trim(),
+      date: scheduleDate
+    };
+    const updatedSchedules = [...(job.customSchedules || []), newSchedule];
+    onUpdateSchedules(job.id, updatedSchedules);
+    setScheduleTitle('');
+    setScheduleDate('');
+  };
+
+  const handleDeleteSchedule = (scheduleId: string) => {
+    const updatedSchedules = (job.customSchedules || []).filter((s) => s.id !== scheduleId);
+    onUpdateSchedules(job.id, updatedSchedules);
+  };
   const [showFullRawText, setShowFullRawText] = useState(true);
   
   // Construct complete raw text guaranteed fallback if rawText was missing in legacy state
@@ -559,6 +580,67 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 </button>
               </div>
             )}
+
+            {/* Custom Job Schedules Manager */}
+            <div className="p-4 bg-white rounded-xl border border-[#EAE5DC] space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between pb-1 border-b border-[#EAE5DC]">
+                <h4 className="text-xs font-bold text-[#0A0A0A] flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-[#2EB0A6]" />
+                  <span>전형 진행 일정 관리</span>
+                </h4>
+                <span className="text-[10px] text-[#6A6A6A]">캘린더 연동</span>
+              </div>
+
+              {/* Schedules List */}
+              <div className="space-y-1.5">
+                {job.customSchedules && job.customSchedules.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {job.customSchedules.map((s) => (
+                      <div
+                        key={s.id}
+                        className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <span>{s.title} ({s.date})</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSchedule(s.id)}
+                          className="p-0.5 text-blue-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                          title="일정 삭제"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 py-1">등록된 전형 일정이 없습니다. 일정을 직접 적어보세요!</p>
+                )}
+              </div>
+
+              {/* Add Schedule Form */}
+              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                <input
+                  type="text"
+                  placeholder="예: 1차 면접, 과제 제출"
+                  value={scheduleTitle}
+                  onChange={(e) => setScheduleTitle(e.target.value)}
+                  className="flex-1 px-2.5 py-1.5 bg-[#FAF5E8] border border-[#EAE5DC] rounded-lg text-xs focus:outline-none focus:border-[#2EB0A6]"
+                />
+                <input
+                  type="date"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  className="px-2.5 py-1.5 bg-[#FAF5E8] border border-[#EAE5DC] rounded-lg text-xs focus:outline-none focus:border-[#2EB0A6] cursor-pointer"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSchedule}
+                  className="px-3 py-1.5 bg-[#2EB0A6] hover:bg-[#228B83] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shrink-0"
+                >
+                  추가
+                </button>
+              </div>
+            </div>
 
             {/* Memo & Scratchpad */}
             <div className="p-4 bg-white rounded-xl border border-[#EAE5DC] space-y-2">

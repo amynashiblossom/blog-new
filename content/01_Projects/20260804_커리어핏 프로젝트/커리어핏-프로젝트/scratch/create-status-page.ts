@@ -385,7 +385,7 @@ async function run() {
         ],
       })
     );
-    console.log('✅ Child Page 1 created:', devLogPage.url);
+    console.log('✅ Child Page 1 created:', (devLogPage as any).url);
 
     const scrumPage = await withRetry(() =>
       notion.pages.create({
@@ -419,7 +419,7 @@ async function run() {
         ],
       })
     );
-    console.log('✅ Child Page 2 created:', scrumPage.url);
+    console.log('✅ Child Page 2 created:', (scrumPage as any).url);
 
   } catch (childErr: any) {
     console.warn('⚠️ Child page creation warning:', childErr.message);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { JobPost, ApplicationStatus, UserResume } from './types';
+import { JobPost, ApplicationStatus, UserResume, CustomSchedule } from './types';
 import { SAMPLE_JOB_POSTS, INITIAL_USER_RESUME } from './data/mockJobs';
 import { Navbar } from './components/Navbar';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -8,6 +8,8 @@ import { AIMatchReport } from './components/AIMatchReport';
 import { JobScraperModal } from './components/JobScraperModal';
 import { JobDetailModal } from './components/JobDetailModal';
 import { ResumeManagerModal } from './components/ResumeManagerModal';
+import { localAnalyzeMatch } from './utils/gemini';
+import { encryptLocalData, decryptLocalData } from './utils/crypto';
 import { 
   Plus, 
   Sparkles, 
@@ -32,11 +34,11 @@ export default function App() {
     return SAMPLE_JOB_POSTS;
   });
 
-  // User Resume State
+  // User Resume State (Encrypted in LocalStorage for Security)
   const [userResume, setUserResume] = useState<UserResume>(() => {
     try {
       const saved = localStorage.getItem('jd_archive_resume_v1');
-      if (saved) return JSON.parse(saved);
+      if (saved) return decryptLocalData(saved, INITIAL_USER_RESUME);
     } catch (e) {
       console.warn('Failed to load resume from localStorage', e);
     }
@@ -66,9 +68,10 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('jd_archive_resume_v1', JSON.stringify(userResume));
+      // Encrypt user resume & attached document text before saving to local storage
+      localStorage.setItem('jd_archive_resume_v1', encryptLocalData(userResume));
     } catch (e) {
-      console.error('Failed to save resume to localStorage', e);
+      console.error('Failed to save encrypted resume to localStorage', e);
     }
   }, [userResume]);
 
@@ -107,35 +110,28 @@ export default function App() {
     }
   };
 
+  const handleUpdateSchedules = (jobId: string, schedules: CustomSchedule[]) => {
+    setJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, customSchedules: schedules } : j))
+    );
+    if (selectedJob && selectedJob.id === jobId) {
+      setSelectedJob((prev) => (prev ? { ...prev, customSchedules: schedules } : null));
+    }
+  };
+
   const handleAnalyzeMatch = async (jobToAnalyze: JobPost, customResume?: UserResume) => {
     try {
       const targetResume = customResume || userResume;
-      const response = await fetch('/api/analyze-match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job: jobToAnalyze,
-          userResume: targetResume
-        })
-      });
+      const result = await localAnalyzeMatch(jobToAnalyze, targetResume);
 
-      const resText = await response.text();
-      let json: any = {};
-      try {
-        json = JSON.parse(resText);
-      } catch (e) {
-        console.error('Failed to parse analyze-match response:', e);
-        return;
-      }
-
-      if (json.success && json.data) {
+      if (result.success && result.data) {
         setJobs((prev) =>
           prev.map((j) =>
-            j.id === jobToAnalyze.id ? { ...j, matchAnalysis: json.data } : j
+            j.id === jobToAnalyze.id ? { ...j, matchAnalysis: result.data } : j
           )
         );
         if (selectedJob && selectedJob.id === jobToAnalyze.id) {
-          setSelectedJob((prev) => (prev ? { ...prev, matchAnalysis: json.data } : null));
+          setSelectedJob((prev) => (prev ? { ...prev, matchAnalysis: result.data } : null));
         }
       }
     } catch (error) {
@@ -288,6 +284,7 @@ export default function App() {
         onClose={() => setSelectedJob(null)}
         onStatusChange={handleStatusChange}
         onUpdateMemo={handleUpdateMemo}
+        onUpdateSchedules={handleUpdateSchedules}
         onDeleteJob={handleDeleteJob}
         onAnalyzeMatch={handleAnalyzeMatch}
         onSaveResume={(updated) => setUserResume(updated)}

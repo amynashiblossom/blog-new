@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx api/server.ts",
-    "build": "vite build && esbuild api/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node dist/server.cjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "scrum": "tsx scripts/post-to-notion.ts",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

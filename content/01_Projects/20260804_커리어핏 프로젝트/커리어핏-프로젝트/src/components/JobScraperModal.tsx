@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { JobPost } from '../types';
+import { localScrapeJD } from '../utils/gemini';
 
 interface JobScraperModalProps {
   isOpen: boolean;
@@ -59,31 +60,13 @@ export const JobScraperModal: React.FC<JobScraperModalProps> = ({
     setParsedData(null);
 
     try {
-      const response = await fetch('/api/scrape-jd', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: targetUrl.trim(),
-          rawText: targetText.trim()
-        })
-      });
+      const result = await localScrapeJD(targetUrl.trim(), targetText.trim());
 
-      const resText = await response.text();
-      let json: any = {};
-      try {
-        json = JSON.parse(resText);
-      } catch (parseError) {
-        if (!response.ok) {
-          throw new Error(`서버 응답 오류가 발생했습니다 (HTTP ${response.status}). Vercel 환경변수(GEMINI_API_KEY) 설정 및 서버 로그를 확인해 주세요.`);
-        }
-        throw new Error('응답 데이터를 파싱하지 못했습니다.');
+      if (!result.success || !result.data) {
+        throw new Error('공고 파싱 처리 중 오류가 발생했습니다.');
       }
 
-      if (!response.ok || !json.success || !json.data) {
-        throw new Error(json.error || `공고 파싱 처리 중 오류가 발생했습니다 (HTTP ${response.status}).`);
-      }
-
-      setParsedData(json.data);
+      setParsedData(result.data);
     } catch (err: any) {
       setError(err.message || '공고 파싱 도중 오류가 발생했습니다.');
     } finally {
@@ -407,7 +390,7 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
               <div className="flex items-center justify-between border-b border-[#EAE5DC] pb-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-[#2EB0A6]">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>AI 자동 추출 완성</span>
+                  <span>{(parsedData as any)?.isAiParsed ? '✨ Gemini 2.5 AI 분석 완료' : '⚡ 오프라인 로컬 분석 완료'}</span>
                 </div>
                 <span className="text-xs text-[#6A6A6A]">내 서재 영구 보관용</span>
               </div>
@@ -505,6 +488,15 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
               </div>
             </div>
           )}
+
+          {/* 개인정보 및 데이터 보안 고지 */}
+          <div className="p-3 bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl text-[11px] text-[#6A6A6A] leading-relaxed flex items-start gap-2">
+            <span className="text-sm mt-0.5">🔒</span>
+            <div>
+              <p className="font-semibold text-[#0A0A0A]">개인정보 및 데이터 보안 고지</p>
+              <p>입력하신 채용 공고와 분석에 사용된 이력서 데이터는 서버에 저장되지 않으며, 오직 사용자의 브라우저(로컬 스토리지)에만 임시 보관됩니다.</p>
+            </div>
+          </div>
 
         </div>
 

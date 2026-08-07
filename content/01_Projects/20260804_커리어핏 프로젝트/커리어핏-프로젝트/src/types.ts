@@ -11,6 +11,12 @@ export interface MatchAnalysis {
   interviewPrepQuestions: string[];
 }
 
+export interface CustomSchedule {
+  id: string;
+  title: string; // 예: "1차 면접", "과제 제출" 등
+  date: string;  // YYYY-MM-DD
+}
+
 export interface JobPost {
   id: string;
   companyName: string;
@@ -31,6 +37,7 @@ export interface JobPost {
   memo?: string;
   rawText?: string; // 공고 전체 원문 텍스트 전체 보존
   matchAnalysis?: MatchAnalysis;
+  customSchedules?: CustomSchedule[];
 }
 
 export interface ResumeFile {

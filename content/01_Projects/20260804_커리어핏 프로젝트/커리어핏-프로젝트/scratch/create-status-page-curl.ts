@@ -148,12 +148,12 @@ const children = [
   {
     object: 'block',
     type: 'numbered_list_item',
-    numbered_list_item: { rich_text: [{ type: 'text', text: { content: '역량 매칭 점수가 낮은 자격요건에 대해 맞춤형 이력서/자소서 수정 문장 추천 기능 개발' } }],
+    numbered_list_item: { rich_text: [{ type: 'text', text: { content: '역량 매칭 점수가 낮은 자격요건에 대해 맞춤형 이력서/자소서 수정 문장 추천 기능 개발' } }] },
   },
   {
     object: 'block',
     type: 'numbered_list_item',
-    numbered_list_item: { rich_text: [{ type: 'text', text: { content: 'AI 매칭 진단 결과 리포트 PDF/Text 저장 및 공유 기능 추가' } }],
+    numbered_list_item: { rich_text: [{ type: 'text', text: { content: 'AI 매칭 진단 결과 리포트 PDF/Text 저장 및 공유 기능 추가' } }] },
   },
   {
     object: 'block',
@@ -193,12 +193,12 @@ const children = [
   {
     object: 'block',
     type: 'bulleted_list_item',
-    bulleted_list_item: { rich_text: [{ type: 'text', text: { content: '2026-08-04: 커리어핏 프로젝트 초기 구축 (Vite + React + Express + Gemini 3.6 Flash 연동)' } }],
+    bulleted_list_item: { rich_text: [{ type: 'text', text: { content: '2026-08-04: 커리어핏 프로젝트 초기 구축 (Vite + React + Express + Gemini 3.6 Flash 연동)' } }] },
   },
   {
     object: 'block',
     type: 'bulleted_list_item',
-    bulleted_list_item: { rich_text: [{ type: 'text', text: { content: '2026-08-05: 링크드인 JD 스크랩 가이드 UI 개선, Vercel 배포 연동, 노션 데일리 스크럼 스크립트 작성' } }],
+    bulleted_list_item: { rich_text: [{ type: 'text', text: { content: '2026-08-05: 링크드인 JD 스크랩 가이드 UI 개선, Vercel 배포 연동, 노션 데일리 스크럼 스크립트 작성' } }] },
   },
   {
     object: 'block',
