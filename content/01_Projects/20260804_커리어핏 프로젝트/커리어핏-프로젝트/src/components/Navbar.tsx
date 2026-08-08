@@ -141,13 +141,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-xs font-semibold text-[#6A6A6A] flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <span className="text-xs font-semibold text-[#6A6A6A] flex items-center gap-1 shrink-0 whitespace-nowrap">
               <SlidersHorizontal className="w-3.5 h-3.5" /> 상태 필터:
             </span>
             <button
               onClick={() => setFilterStatus('all')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'all'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
@@ -157,17 +157,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('interested')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'interested'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
               }`}
             >
-              관심 공고
+              관심공고
             </button>
             <button
               onClick={() => setFilterStatus('preparing')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'preparing'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
@@ -177,7 +177,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('applied')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'applied'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
@@ -187,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('interview')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'interview'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setFilterStatus('passed')}
-              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 ${
+              className={`px-3 py-1 text-xs rounded-lg transition-colors shrink-0 whitespace-nowrap ${
                 filterStatus === 'passed'
                   ? 'bg-[#2EB0A6] text-white font-medium'
                   : 'bg-white border border-[#EAE5DC] text-[#3A3A3A] hover:bg-[#FAF5E8]'
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`flex flex-col items-center gap-1 py-1 ${activeTab === 'kanban' ? 'text-[#2EB0A6] font-bold' : 'text-[#6A6A6A]'}`}
           >
             <Kanban className="w-5 h-5" />
-            <span>공고와 매칭</span>
+            <span>공고랑 매칭</span>
           </button>
           <button
             onClick={() => setActiveTab('timeline')}
@@ -230,13 +230,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Sparkles className="w-5 h-5" />
             <span>AI 진단</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('resume')}
-            className={`flex flex-col items-center gap-1 py-1 ${activeTab === 'resume' ? 'text-[#2EB0A6] font-bold' : 'text-[#6A6A6A]'}`}
-          >
-            <FileText className="w-5 h-5" />
-            <span>내 이력서</span>
           </button>
         </div>
 

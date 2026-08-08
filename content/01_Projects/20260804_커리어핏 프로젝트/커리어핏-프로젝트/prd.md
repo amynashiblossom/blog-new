@@ -1,63 +1,128 @@
-# [PRD] 커리어핏 (CareerFit) - AI 기반 공고 스크랩 & 서류 역량 매칭 서비스
+# [PRD] 커리어핏 (CareerFit) - AI 기반 공고 스크랩 & 서류 역량 매칭 및 스케줄링 통합 플랫폼 (v6.0)
+
+## 📄 개정 이력 (Revision History)
+
+| 버전 | 개정일자 | 주요 변경 및 개편 내용 |
+|:---:|:---:|---|
+| **v1.0** | 2026-08-04 | Node.js Express 백엔드 및 Gemini AI 파서 초기 구축 |
+| **v2.0** | 2026-08-05 | 브라우저 중심 Pure SPA 구조 전환 및 LocalStorage 기본 데이터 연동 |
+| **v3.0** | 2026-08-06 | 2-Column 매칭 뷰(좌: 공고 / 우: 서류분석) 도입 및 첨부서류 개별 휴지통 삭제 기능 추가 |
+| **v4.0** | 2026-08-07 | Gemini 2.5 REST API 연동, 오프라인 Fallback 엔진, 커스텀 전형 타임라인 및 이력서 XOR 암호화 |
+| **v5.0** | 2026-08-08 | API Key 유출 완벽 차단을 위한 Supabase Edge Function (`gemini-proxy`) 서버 사이드 프록시 도입 및 PII 개인정보 자동 마스킹 처리 |
+| **v6.0** | **2026-08-08** | **[약관 회피 & 범용 AI 대비 보안 차별화] 텍스트 직접 복사·붙여넣기(Paste) 중심 메인 UX 전환, B2C 개인 생산성 도구 정체성 확립, Claude/ChatGPT 직접 입력 대비 PII 마스킹·Zero-Training 보안 명분 재정립** |
+
+---
 
 ## 1. 프로젝트 개요 (Project Overview)
+
 - **제품명**: 커리어핏 (CareerFit)
-- **서비스 목적**: 구직자가 채용 공고(JD) URL 또는 텍스트를 스크랩하면, AI가 주요 업무·필수 자격요건·선호 요건을 구체화하여 정밀 분석하고, 구직자의 이력서/경력기술서와 비교하여 매칭률, 강점, 보완점 및 맞춤형 개선안을 즉시 제공하는 채용 보조 서비스입니다.
+- **서비스 목적**: 구직자가 채용 공고(JD)를 **사적으로 수집·분석·스케줄링하는 100% B2C 개인용 생산성 대시보드(Productivity Tool)**입니다. 구직자가 공고 텍스트를 직접 복사·붙여넣거나 URL을 입력하면, **Google Gemini 2.5 AI**가 주요 업무·필수 자격요건·우대사항을 구체화하여 정밀 파싱하고, 구직자의 이력서/경력기술서와 대조하여 매칭 점수, 맞춤형 강점, 보완점, 서류 작성 팁 및 예상 면접 질문을 제공합니다.
+- **v6.0 핵심 개편 및 전략적 명분 (Strategic Why & Privacy)**:
+  1. **플랫폼 약관 충돌 회피 (텍스트 직접 복사·붙여넣기 메인 UX)**:
+     - 채용 플랫폼 HTML을 자동 크롤링하는 방식은 무단 파싱/약관 위반 마찰 위험이 있습니다.
+     - 커리어핏은 구직자가 사적 개인 이용 목적으로 직접 공고 텍스트를 복사하여 서비스에 붙여넣는(Paste) 형태를 **메인(Primary) UX**로 삼아 법적·기술적 약관 이슈를 완벽히 회피합니다. (URL 파싱은 보조 지원)
+  2. **B2C 개인용 Productivity Tool 정체성 정의**:
+     - 커리어핏은 공고를 제3자에게 재배포하거나 채용을 중개하는 플랫폼이 아니라, Notion이나 Obsidian처럼 **"구직자 개인이 본인의 지원 현황과 일정을 모아 정돈하는 100% 사적 개인 대시보드"**로 정의하여 크롤링 제재 및 법적 위험을 원천 차단합니다.
+  3. **범용 AI(Claude, ChatGPT 등) 직접 입력 대비 압도적 보안 및 UX 차별화 (Why 재정립)**:
+     - **범용 AI 웹 서비스 직접 입력의 문제점**: 구직자가 Claude, ChatGPT 등의 웹 챗봇에 이력서를 직접 업로드/복사하면, 연락처·이메일 등 민감 개인정보(PII)가 텍스트 그대로 전송되고 모델 학습 데이터로 활용될 보안 위험이 있으며, 공고 대조 결과를 타임라인 캘린더나 매칭 대시보드로 체계화할 수 없습니다.
+     - **커리어핏만의 보안 차별성**:
+       - 🛡️ **PII 자동 마스킹**: Supabase Edge Function 프록시가 이메일, 전화번호 등 민감한 개인정보를 마스킹(`[이메일]`, `[연락처]`) 처리 후 AI 모델로 전송합니다.
+       - 🔒 **Zero Data Training (AI 노-학습)**: 챗봇 서비스와 달리 API 호출 방식으로 모델 재학습에 데이터가 활용되지 않습니다.
+       - 🔑 **로컬 암호화 보관소**: 이력서 원문은 사용자 브라우저(`localStorage`)에만 XOR + Base64로 암호화되어 보관됩니다.
+  4. **파편화된 채용 전형의 단일 타임라인 통합 관리**:
+     - 여러 채용 공고와 1/2차 면접, 과제 제출 등 커스텀 일정을 단 하나의 '월간 타임라인 캘린더'로 모아서 효율적으로 트래킹합니다.
+  5. **Zero Trust Security (Supabase Edge Function Proxy)**:
+     - Gemini API Key를 Deno 런타임 기반의 Supabase Edge Function (`gemini-proxy`) Secrets으로 은닉 관리하여 클라이언트 API Key 노출을 원천 차단합니다.
 
 ---
 
-## 2. 핵심 변경 및 요구사항 반영 내역 (Key Features & Updates)
+## 2. 주요 기능 및 상세 명세 (Key Features & Specifications)
 
-### 2.1. 채용 공고(JD) 스크랩 및 파싱 고도화
-- **URL 및 텍스트 파싱 일원화**: URL(링크드인, 원티드, 사람인 등) 및 직접 붙여넣은 텍스트 모두에서 동일하게 공고 전체 상세 내용을 추출 및 보존합니다.
-- **구체적인 3대 요소 자동 분류**:
-  - **주요 업무 (Tasks & Responsibilities)**: 생략 없이 공고 내 R&R 항목을 목록 형태로 상세 파싱
-  - **필수 자격요건 (Requirements)**: 학력, 경력, 필수 기술 스택 및 자격증 항목 상세 추출
-  - **우대 및 선호요건 (Preferred)**: 우대 기술, 도메인 경험 및 우대사항 추출
-- **사용자 편의성 가이드**:
-  - URL 입력란 상단에 링크드인 예시 URL (`https://www.linkedin.com/jobs/view/4445699622/`) 안내 및 원클릭 예시 URL 자동 입력 버튼 제공.
+### 2.1. 약관 안전 텍스트 복사 중심 입력 & 하이브리드 파서 UX (`src/components/JobScraperModal.tsx`)
+- **메인 입력 UX (Primary)**:
+  - '공고 텍스트 직접 복사·붙여넣기(Paste)'를 기본 메인 탭으로 배치.
+  - 유저가 구인 사이트에서 드래그하여 복사한 raw 텍스트를 붙여넣으면 Gemini 2.5 AI가 주요 업무 / 필수 자격요건 / 우대사항 / 마감일 / 기업명 / 직무를 자동으로 추출 및 정규화 구조화.
+- **보조 입력 UX (Secondary)**:
+  - '공고 URL 입력'을 보조 옵션으로 제공하여 로컬 및 백업 엔진으로 파싱 지원.
+- **하이브리드 지원**:
+  - 1차: Supabase `gemini-proxy` 기반 Gemini 2.5 AI 구조화 파싱 (`isAiParsed: true`).
+  - 2차 (Fallback): 네트워크 단절 또는 API 장애 발생 시 0.1초 만에 `pureLocalScrapeEngine` 로컬 정규식 엔진으로 무중단 자동 전환.
 
-### 2.2. 메뉴 명칭 및 구조 최적화
-- 기존 **"지원 칸반 보드"** 명칭을 **"공고와 매칭"**으로 직관적으로 변경.
-- GNB(상단 네비게이션) 메뉴 레이아웃 정리: 중복되던 메뉴를 정리하고 **[공고와 매칭]**, **[D-DAY 타임라인]**, **[AI 역량매칭 진단]** 중심의 명확한 사용자 동선 제공.
+### 2.2. Supabase Edge Function 기반 보안 AI 프록시 (`supabase/functions/gemini-proxy`)
+- **보안 엔드포인트**: `POST https://<project-ref>.supabase.co/functions/v1/gemini-proxy`
+- **보안 매커니즘**:
+  - `GEMINI_API_KEY`는 Supabase Dashboard Secrets에서만 관리되며 클라이언트 번들에 절대로 노출되지 않습니다.
+  - 요청 데이터 본문의 PII(이메일, 연락처, 외부링크 등)를 정규식 검사로 자동 마스킹(`[이메일]`, `[연락처]`) 후 AI 모델로 안전 전송.
+  - CORS 보안 설정으로 인가된 앱 요청만 중계 처리.
 
-### 2.3. 공고 상세 및 서류 매칭 인터페이스 (좌: 공고 / 우: 서류 매칭)
-- **2-Column 매칭 뷰**:
-  - **좌측**: 스크랩한 채용공고의 주요 업무, 필수 자격요건, 우대사항 및 원문 전체 정보.
-  - **우측**: 사용자 서류(이력서/경력기술서) 기반 AI 매칭 리포트 (매칭 점수, 일치하는 역량, 부족한 자격요건, 보완 가이드).
-- **첨부 서류 삭제 (휴지통 버튼) 기능**:
-  - 매칭 분석에 사용된 첨부 서류 태그 옆에 휴지통(<Trash2>) 아이콘 추가.
-  - 특정 서류를 삭제하면 남아있는 서류를 기반으로 AI 공고 매칭을 즉시 자동 재분석.
+### 2.3. 공고 상세 & 서류 매칭 인터페이스 (2-Column View)
+- **좌측 Column**: 채용공고 기본 정보, 구체화된 3대 요소(주요 업무 / 필수 자격 / 우대사항), 키워드 태그 및 원문 텍스트.
+- **우측 Column**: AI 매칭 리포트 (매칭 점수, 부합하는 강점, 보완할 점, 추천 작성 팁, 예상 면접 질문).
+- **첨부 서류 개별 삭제 (휴지통 기능)**:
+  - 첨부 서류 태그 옆 휴지통 아이콘 클릭 시 해당 서류를 즉시 제외하고 남은 서류 기준 AI 매칭 리포트 자동 재계산.
 
----
+### 2.4. 통합 커스텀 전형 일정 관리 및 D-Day 타임라인 (`src/components/TimelineView.tsx`)
+- 공고별 커스텀 전형(1차 면접, 과제 제출, 2차 면접 등) CRUD 지원.
+- 여러 채용 플랫폼에서 수집한 공고의 공식 마감일(🔴 마감)과 개인 전형 일정(📅 일정)을 단일 월간 타임라인 캘린더에서 테마 칩으로 동시 트래킹.
 
-## 3. 주요 사용자 흐름 (User Flow)
-
-1. **공고 스크랩**:
-   - 상단 [공고 스크랩하기] 버튼 클릭
-   - 채용 공고 URL(예: `https://www.linkedin.com/jobs/view/4445699622/`)을 입력하거나 JD 텍스트 직접 입력
-2. **공고와 매칭 탭 이동**:
-   - 관심 공고 카드 선택 시 좌측에는 JD 전체 상세 내용, 우측에는 내 서류와의 역량 매칭 리포트가 출현
-3. **첨부 서류 관리**:
-   - 매칭 분석 영역에서 불필요한 서류는 휴지통 아이콘을 눌러 개별 삭제
-   - 삭제 즉시 최신 서류 기준으로 AI 매칭 분석 갱신
+### 2.5. Claude/ChatGPT 대비 '노-학습 / PII 마스킹' 로컬 보안 서류고 (`src/utils/crypto.ts`)
+- 구직자의 이력서 프로필 및 경력기술서 원문이 `localStorage` (`jd_archive_resume_v1`)에 저장될 때 XOR + Base64 암호화(`ENC_V1_...`) 처리.
+- Claude/ChatGPT 등 범용 AI 웹 서비스와 달리 개인 정보(이메일/전화번호) PII 자동 마스킹 후 API를 호출하며, AI 모델 재학습 이용 0% 보장.
 
 ---
 
-## 4. 기술 아키텍처 (Technical Architecture)
+## 3. 기술 아키텍처 (Technical Architecture)
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide Icons, Vite
-- **Backend**: Node.js, Express (Cloud Run Container 환경)
-- **AI Engine**: `@google/genai` (Gemini 3.6 Flash 기반 JSON 파싱 및 역량 매칭)
-- **주요 API**:
-  - `POST /api/scrape-jd`: URL/텍스트를 입력받아 AI가 `companyName`, `title`, `position`, `dueDate`, `tasks`, `requirements`, `preferred`, `keywords`, `fullRawText` 구조체 반환
+- **Security & Proxy Backend**: Supabase Edge Functions (Deno Runtime, TypeScript)
+- **AI Engine**: Google Gemini 2.5 Flash (`gemini-2.5-flash`)
+- **Data Encryption**: XOR + Base64 Encrypted Browser LocalStorage (Pure Local Privacy)
 
 ---
 
-## 5. 파일 구조 (Key Component Structure)
+## 4. 시스템 아키텍처 및 데이터 흐름도 (Data Flow Diagram)
 
-- `server.ts`: Express API 서버 및 Gemini AI JD 파서/매칭 로직
-- `src/components/Navbar.tsx`: 네비게이션 바 ("공고와 매칭" 명칭 및 메뉴 구조)
-- `src/components/JobScraperModal.tsx`: JD URL 및 텍스트 스크랩 모달 (링크드인 URL 가이드 포함)
-- `src/components/JobDetailModal.tsx`: 좌측 공고 상세 / 우측 AI 매칭 분석 뷰 및 첨부서류 휴지통 삭제 기능
-- `src/components/AIMatchReport.tsx`: 매칭점수, 일치사항, 부족한 부분 분석 리포트 컴포넌트
+```mermaid
+graph TD
+    User([사용자]) -->|1. [메인] JD 텍스트 직접 복사·붙여넣기 / [보조] URL 입력| ScraperModal[JobScraperModal.tsx]
+    ScraperModal -->|2. localScrapeJD 호출| GeminiUtil[src/utils/gemini.ts]
+    
+    subgraph Security & Privacy Proxy Layer
+        GeminiUtil -->|3. POST prompt & text| SupabaseProxy[Supabase Edge Function: gemini-proxy]
+        SupabaseProxy -->|4. PII 마스킹 & Secrets Key 사용| GeminiAPI[Google Gemini 2.5 API]
+        GeminiAPI -->|5-A. 파싱/매칭 JSON 응답| SupabaseProxy
+        SupabaseProxy -->|6. JSON 결과 전달| GeminiUtil
+        
+        GeminiAPI -.->|5-B. 통신 장애/Quota 초과 시| LocalFallback[Pure Local Engine]
+        LocalFallback -->|Fallback JSON| GeminiUtil
+    end
+
+    GeminiUtil -->|7. 구조화 데이터 저장| AppState[App.tsx State]
+    
+    User -->|8. 이력서 등록/수정 (Claude/ChatGPT 대비 PII 마스킹 & AI 학습 0%)| ResumeModal[ResumeManagerModal.tsx]
+    ResumeModal -->|9. encryptLocalData| Crypto[src/utils/crypto.ts]
+    Crypto -->|10. ENC_V1_ Encrypted String| LocalStorage[(Browser LocalStorage)]
+
+    User -->|11. 멀티 플랫폼 공고 커스텀 일정 통합| DetailModal[JobDetailModal.tsx]
+    DetailModal & LocalStorage -->|12. 통합 월간 일정 트래킹| TimelineView[TimelineView.tsx]
+
+    AppState & LocalStorage -->|13. localAnalyzeMatch| MatchReport[AIMatchReport.tsx]
+    MatchReport -->|14. 2-Column AI 매칭 리포트 출력| User
+```
+
+---
+
+## 5. 주요 코드 파일 명세 (Key Component Structure)
+
+1. **[prd.md](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/prd.md) [MODIFY]**
+   - v6.0 개정 반영: 플랫폼 약관 충돌 회피 전략, 텍스트 복사 중심 메인 UX, B2C 개인 생산성 도구 정체성 및 Claude/ChatGPT 직접 입력 대비 PII 마스킹·Zero-Training 보안 명분 재정립.
+2. **[src/components/JobScraperModal.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/JobScraperModal.tsx)**
+   - 공고 텍스트 직접 복사·붙여넣기(Paste) 탭을 메인 UX로 제공하며, Gemini 2.5 AI가 주요 업무/자격요건/우대사항 정규화 파싱.
+3. **[supabase/functions/gemini-proxy/index.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/supabase/functions/gemini-proxy/index.ts)**
+   - Supabase Edge Function Deno 서버 코드. `GEMINI_API_KEY` Secrets 활용, PII 자동 마스킹 및 Gemini REST API 보안 중계.
+4. **[src/utils/gemini.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/gemini.ts)**
+   - Supabase Edge Function 엔드포인트 호출 및 무중단 로컬 Fallback 파싱/분석 유틸리티.
+5. **[src/utils/crypto.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/crypto.ts)**
+   - 이력서 및 경력기술서 `localStorage` 저장 시 XOR + Base64 암호화/복호화 담당.
+6. **[src/components/TimelineView.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/TimelineView.tsx)**
+   - 멀티 플랫폼 공고의 마감일과 커스텀 전형 일정을 단일 월간 타임라인 캘린더 상에 테마 칩으로 동시 표시.
