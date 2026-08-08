@@ -44,35 +44,35 @@ const COLUMNS: ColumnDef[] = [
   {
     key: 'interested',
     title: '관심 공고',
-    icon: <Heart className="w-4 h-4 text-[#2EB0A6]" />,
+    icon: <Heart className="w-4 h-4 text-[#2EB0A6] shrink-0" />,
     colorClass: 'border-t-4 border-t-[#2EB0A6]',
     badgeBg: 'bg-[#E6F7F5] text-[#2EB0A6]'
   },
   {
     key: 'preparing',
     title: '서류 준비 중',
-    icon: <FileEdit className="w-4 h-4 text-[#2EB0A6]" />,
+    icon: <FileEdit className="w-4 h-4 text-[#2EB0A6] shrink-0" />,
     colorClass: 'border-t-4 border-t-[#2EB0A6]',
     badgeBg: 'bg-[#E6F7F5] text-[#2EB0A6]'
   },
   {
     key: 'applied',
     title: '지원 완료',
-    icon: <Send className="w-4 h-4 text-[#2EB0A6]" />,
+    icon: <Send className="w-4 h-4 text-[#2EB0A6] shrink-0" />,
     colorClass: 'border-t-4 border-t-[#2EB0A6]',
     badgeBg: 'bg-[#E6F7F5] text-[#2EB0A6]'
   },
   {
     key: 'interview',
     title: '면접 진행',
-    icon: <Users className="w-4 h-4 text-[#2EB0A6]" />,
+    icon: <Users className="w-4 h-4 text-[#2EB0A6] shrink-0" />,
     colorClass: 'border-t-4 border-t-[#2EB0A6]',
     badgeBg: 'bg-[#E6F7F5] text-[#2EB0A6]'
   },
   {
     key: 'passed',
     title: '합격 / 결과',
-    icon: <CheckCircle2 className="w-4 h-4 text-[#2EB0A6]" />,
+    icon: <CheckCircle2 className="w-4 h-4 text-[#2EB0A6] shrink-0" />,
     colorClass: 'border-t-4 border-t-[#2EB0A6]',
     badgeBg: 'bg-[#E6F7F5] text-[#2EB0A6]'
   }
@@ -97,7 +97,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
   return (
     <div className="w-full overflow-x-auto pb-6 max-w-full rounded-2xl border border-[#EAE5DC]/60 bg-[#FAF5E8]/30 p-2 sm:p-3">
-      <div className="flex gap-3 min-w-[980px] xl:min-w-full">
+      <div className="flex gap-3 min-w-[1050px] xl:min-w-full">
         {COLUMNS.map((col) => {
           const colJobs = jobs.filter((j) => {
             if (col.key === 'passed') {
@@ -106,27 +106,32 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             return j.status === col.key;
           });
 
+          const isInterested = col.key === 'interested';
+
           return (
             <div
               key={col.key}
-              className="flex-1 bg-[#FAF5E8]/60 border border-[#EAE5DC] rounded-2xl p-3 flex flex-col min-h-[650px] shadow-2xs"
+              className={`${
+                isInterested ? 'flex-[1.35] min-w-[270px]' : 'flex-1 min-w-[220px]'
+              } bg-[#FAF5E8]/60 border border-[#EAE5DC] rounded-2xl p-3 flex flex-col min-h-[650px] shadow-2xs transition-all`}
             >
               {/* Column Header */}
-              <div className={`p-3 bg-white rounded-xl mb-3 border border-[#EAE5DC] ${col.colorClass} flex items-center justify-between shadow-2xs`}>
-                <div className="flex items-center gap-2">
+              <div className={`p-3 bg-white rounded-xl mb-3 border border-[#EAE5DC] ${col.colorClass} flex items-center justify-between gap-2 shadow-2xs shrink-0`}>
+                <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                   {col.icon}
-                  <h3 className="font-bold text-sm text-[#0A0A0A]">{col.title}</h3>
-                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${col.badgeBg}`}>
+                  <h3 className="font-bold text-sm text-[#0A0A0A] whitespace-nowrap shrink-0">{col.title}</h3>
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full shrink-0 ${col.badgeBg}`}>
                     {colJobs.length}
                   </span>
                 </div>
-                {col.key === 'interested' && (
+                {isInterested && (
                   <button
                     onClick={onOpenScraper}
-                    className="p-1 text-[#2EB0A6] hover:bg-[#E6F7F5] rounded-lg transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#2EB0A6] bg-[#E6F7F5] hover:bg-[#2EB0A6] hover:text-white rounded-lg transition-colors shrink-0 whitespace-nowrap"
                     title="새 공고 스크랩"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5 shrink-0" />
+                    <span className="whitespace-nowrap shrink-0">공고 스크랩</span>
                   </button>
                 )}
               </div>
@@ -248,7 +253,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                             onChange={(e) => onStatusChange(job.id, e.target.value as ApplicationStatus)}
                             className="text-xs bg-[#FAF5E8] border border-[#EAE5DC] rounded-lg px-2 py-1 text-[#0A0A0A] focus:outline-none focus:border-[#2EB0A6] cursor-pointer"
                           >
-                            <option value="interested">관심 공고</option>
+                            <option value="interested">관심공고</option>
                             <option value="preparing">서류 준비 중</option>
                             <option value="applied">지원 완료</option>
                             <option value="interview">면접 진행</option>

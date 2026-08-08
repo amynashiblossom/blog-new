@@ -199,7 +199,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                     <div className="flex items-center gap-1.5 text-[#6A6A6A]">
                       <span>현재 지원 상태:</span>
                       <span className="font-bold text-[#0A0A0A]">
-                        {job.status === 'interested' && '관심 공고'}
+                        {job.status === 'interested' && '관심공고'}
                         {job.status === 'preparing' && '서류 준비 중'}
                         {job.status === 'applied' && '지원 완료'}
                         {job.status === 'interview' && '면접 진행'}

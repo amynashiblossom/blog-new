@@ -222,7 +222,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 onChange={(e) => onStatusChange(job.id, e.target.value as ApplicationStatus)}
                 className="text-xs bg-white border border-[#EAE5DC] rounded-lg px-2.5 py-1.5 font-bold text-[#0A0A0A] focus:outline-none focus:border-[#2EB0A6] cursor-pointer"
               >
-                <option value="interested">관심 공고</option>
+                <option value="interested">관심공고</option>
                 <option value="preparing">서류 준비 중</option>
                 <option value="applied">지원 완료</option>
                 <option value="interview">면접 진행</option>
