@@ -8,7 +8,7 @@
 - GNB 네비게이션 메뉴 명칭 변경 ("지원 칸반 보드" → "공고와 매칭") 및 직관적 사용자 동선 구축 (`Navbar.tsx`)
 - 2-Column 인터페이스 구축 (좌측: 공고 원문 및 상세 / 우측: AI 역량 매칭 진단 리포트) (`JobDetailModal.tsx`, `AIMatchReport.tsx`)
 - 첨부 서류 휴지통 삭제 기능 및 서류 변경 시 AI 매칭점수 자동 재분석 로직 구현 (`JobDetailModal.tsx`)
-- Gemini 3.6 Flash 모델 기반 JSON 응답 구조화 및 역량 진단 백엔드 엔진 연동
+- Gemini 3.6 Flash 모델 기반 JSON 응답 구조화 및 역량 진단 백엔드 엔진 연동 (Supabase Edge Function Proxy 안전 경유 체계 구축)
 - Vercel CLI 배포 환경 세팅, 포트 처리 보완 및 `.env` 환경 변수 보안 처리 (`vercel.json`, `server.ts`)
 - 시니어 PM 관점 서비스 리뷰 Agent Skill 구축 (`.agents/skills/pm-review/SKILL.md`)
 - 노션 SDK 연동 자동화 스크립트 작성 및 현황 페이지/데일리 스크럼 자동 전송 체계 구축 (`scripts/post-to-notion.ts`)
@@ -31,6 +31,7 @@
 4. 모바일/태블릿 해상도 맞춤 반응형 UI/UX 정밀 테스트 및 레이아웃 보완
 
 🔄 스코프 변경 기록 (날짜 + 이유)
+- 2026-08-08: Supabase Edge Function Gemini Proxy 연동 및 클라이언트 API Key 노출 전면 제거 (이유: 브라우저 상에 Gemini API Key가 노출되는 보안 리스크 방지 및 서버리스 프록시 안전 호출 구조 도입)
 - 2026-08-06: 링크드인 공고 복사 가이드 상시 카드 배치 및 텍스트 직접 입력 권장 안내 배너 추가 (이유: 채용 사이트 보안 정책으로 URL 스크래핑 실패율이 증가함에 따라 사용자의 복사-붙여넣기 성공률을 극대화)
 - 2026-08-06: "지원 칸반 보드" 메뉴명을 "공고와 매칭"으로 변경하고 2-Column 매칭 뷰 중심 개편 (이유: 채용공고 원문과 서류 매칭 결과를 동시에 비교할 때의 직관성 및 가독성 극대화)
 - 2026-08-06: 첨부 서류 휴지통 삭제 기능 및 즉시 AI 자동 재분석 로직 추가 (이유: 특정 이력서/경력기술서 포함 여부에 따른 매칭점수 변화를 사용자가 즉각 확인하도록 개선)
@@ -40,6 +41,7 @@
 - 2026-08-04: 커리어핏 프로젝트 초기 구축 (Vite + React + Express + Gemini 3.6 Flash 연동)
 - 2026-08-05: 링크드인 JD 스크랩 가이드 UI 개선, Vercel 배포 연동, 노션 데일리 스크럼 스크립트 작성
 - 2026-08-06: PM 리뷰 Agent Skill 추가, LinkedIn 2-Step 이미지 가이드 상시 노출 카드 추가, 노션 개발/기획 현황 최신화 및 하위 개발기록 페이지 연동
+- 2026-08-08: Supabase Edge Function (`gemini-proxy`) 연동 및 `src/utils/gemini.ts` API Key 직접 조회 제거 개편 완료
 
 📣 데일리 스크럼 자료 (하위 페이지)
 - 2026-08-06: `[2026-08-06] 데일리 스크럼` 생성 및 노션 전송 완료

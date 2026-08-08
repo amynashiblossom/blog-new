@@ -34,36 +34,25 @@ export function hasApiKey(): boolean {
 /**
  * Direct REST API fetch to Google Gemini Models (gemini-2.5-flash)
  */
+/**
+ * Direct REST API fetch to Supabase Edge Function Proxy
+ */
 async function callGeminiAPI(prompt: string): Promise<any> {
-  const apiKey = getSystemApiKey();
-  if (!apiKey) {
-    throw new Error('시스템 Gemini API Key가 설정되지 않았습니다.');
-  }
+  const SUPABASE_FUNCTION_URL = "https://fowrhcrhwmgxhelblxek.supabase.co/functions/v1/gemini-proxy";
 
-  // Gemini REST Endpoint
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-  const response = await fetch(url, {
+  const response = await fetch(SUPABASE_FUNCTION_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      contents: [
-        {
-          parts: [{ text: prompt }]
-        }
-      ],
-      generationConfig: {
-        temperature: 0.2,
-        responseMimeType: 'application/json'
-      }
-    })
+      prompt: prompt,
+    }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gemini API 호출 실패 (Status: ${response.status}): ${errorText}`);
+    throw new Error(`Supabase Proxy 호출 실패 (Status: ${response.status}): ${errorText}`);
   }
 
   const jsonResult = await response.json();
