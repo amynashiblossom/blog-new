@@ -141,17 +141,18 @@ At Johnson & Johnson MedTech, we’re changing the trajectory of health for huma
   // 1. Try Gemini AI API First
   try {
     const aiPrompt = `다음 채용공고 텍스트에서 주요 직무 정보 및 요구사항을 분석하여 JSON 형식으로 응답해줘.
+텍스트에 이미지 alt 속성이나 '회사 로고', 'logo', 웹사이트 주소 등의 노이즈가 포함되어 있으면 직무명/회사명에서 제거하고 실제 직무와 기업명만 추출해줘.
 
 JSON format:
 {
-  "companyName": "회사명 (추정 불가능하면 '기업명 미정')",
+  "companyName": "회사명 (추정 불가능하거나 노이즈 텍스트면 '채용 기업')",
   "title": "채용공고 전체 제목",
-  "position": "직무/포지션명",
+  "position": "직무/포지션명 (노이즈 제거 후 명확한 직무명)",
   "dueDate": "마감일 (YYYY-MM-DD 포맷 또는 '데드라인 미정 (상시/채용시 마감)')",
-  "tasks": ["주요 업무 1", "주요 업무 2", "주요 업무 3"],
+  "tasks": ["주요 업무 1", "주요 업무 2"],
   "requirements": ["필수 자격요건 1", "필수 자격요건 2"],
   "preferred": ["우대 사항 1", "우대 사항 2"],
-  "keywords": ["핵심 기술/도구/경험 키워드 1", "키워드 2", "키워드 3"],
+  "keywords": ["공고 원문의 실제 핵심 기술/도구/직무 키워드 1", "키워드 2"],
   "location": "근무지 위치 (정보 없으면 '원문 참조')",
   "salary": "급여/연봉 (정보 없으면 '채용 시 협의')"
 }
@@ -161,17 +162,20 @@ ${inputText.slice(0, 4000)}`;
 
     const aiParsed = await callGeminiAPI(aiPrompt);
     if (aiParsed && aiParsed.companyName && aiParsed.position) {
+      const cleanCompany = sanitizeTitleOrCompany(aiParsed.companyName, '채용 기업');
+      const cleanPos = sanitizeTitleOrCompany(aiParsed.position, '직무 역량 보유자');
+
       return {
         success: true,
         data: {
-          companyName: aiParsed.companyName,
-          title: aiParsed.title || `${aiParsed.companyName} - ${aiParsed.position}`,
-          position: aiParsed.position,
+          companyName: cleanCompany,
+          title: aiParsed.title || `${cleanCompany} - ${cleanPos}`,
+          position: cleanPos,
           dueDate: aiParsed.dueDate || '데드라인 미정 (상시/채용시 마감)',
           tasks: Array.isArray(aiParsed.tasks) ? aiParsed.tasks : [aiParsed.tasks],
           requirements: Array.isArray(aiParsed.requirements) ? aiParsed.requirements : [aiParsed.requirements],
           preferred: Array.isArray(aiParsed.preferred) ? aiParsed.preferred : [aiParsed.preferred],
-          keywords: Array.isArray(aiParsed.keywords) ? aiParsed.keywords : ["채용공고", "직무역량"],
+          keywords: Array.isArray(aiParsed.keywords) && aiParsed.keywords.length > 0 ? aiParsed.keywords : extractFallbackKeywords(inputText),
           location: aiParsed.location || "원문 참조",
           salary: aiParsed.salary || "채용 시 협의",
           rawText: inputText,
@@ -191,31 +195,72 @@ ${inputText.slice(0, 4000)}`;
 }
 
 /**
+ * Clean noise texts like "회사 로고", "logo", urls, etc.
+ */
+function sanitizeTitleOrCompany(rawStr: string, fallback: string): string {
+  if (!rawStr) return fallback;
+  let cleaned = rawStr.trim();
+  // Remove noise keywords
+  cleaned = cleaned.replace(/회사\s*로고|logo|icon|img|image|http\S+|www\.\S+|localizationjobs\.com/gi, '').trim();
+  cleaned = cleaned.replace(/^[-_:|\s]+|[-_:|\s]+$/g, '').trim();
+  if (cleaned.length < 2) return fallback;
+  return cleaned;
+}
+
+/**
+ * Dynamically extract meaningful keywords from input text
+ */
+function extractFallbackKeywords(text: string): string[] {
+  const dictionary = [
+    "React", "TypeScript", "JavaScript", "Node.js", "Next.js", "Python", "Java", "Go",
+    "Kubernetes", "Docker", "AWS", "Flutter", "Kotlin", "Swift", "Figma", "GA4", "SQL",
+    "Git", "C++", "Vue.js", "Spring", "Django", "FastAPI", "Electrophysiology", "Product Management",
+    "Data Analysis", "Project Management", "Marketing", "Communication", "English", "Korean", "Excel",
+    "HR", "인사", "채용", "조직관리", "성과관리", "보상", "급여", "노무", "현지화", "Localization", "PM"
+  ];
+
+  const matched = new Set<string>();
+  for (const kw of dictionary) {
+    if (new RegExp('\\b' + kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i').test(text)) {
+      matched.add(kw);
+    }
+  }
+  const result = Array.from(matched);
+  if (result.length > 0) return result.slice(0, 8);
+
+  // If no dictionary match, extract frequent Noun-like words (>2 chars, not noise)
+  const words = text.split(/[\s,./()\[\]-]+/).map(w => w.trim()).filter(w => w.length >= 2 && !/^(및|등|수|위해|대한|관한|경우|있습니다|합니다|채용공고|직무역량|실무경험)$/.test(w));
+  const uniqueWords = Array.from(new Set(words));
+  return uniqueWords.slice(0, 5);
+}
+
+/**
  * Pure Local Offline Scraper Engine (Fallback)
  */
 function pureLocalScrapeEngine(url: string, inputText: string) {
   const lines = inputText.split('\n');
 
-  let companyName = "테크 스크랩 기업";
+  let companyName = "채용 기업";
   let title = "스크랩된 채용공고";
-  let position = "소프트웨어 엔지니어 / PM";
+  let position = "해당 직무";
 
   const nonBlankLines = lines.map(l => l.trim()).filter(l => l.length > 0);
   if (nonBlankLines.length > 0) {
     const firstLine = nonBlankLines[0];
     const bracketMatch = firstLine.match(/^\[(.*?)\]\s*(.*)/);
     if (bracketMatch) {
-      companyName = bracketMatch[1].trim();
+      companyName = sanitizeTitleOrCompany(bracketMatch[1], "채용 기업");
       title = firstLine;
-      if (bracketMatch[2]) position = bracketMatch[2].trim();
+      if (bracketMatch[2]) position = sanitizeTitleOrCompany(bracketMatch[2], "해당 직무");
     } else if (firstLine.includes(' - ')) {
       const parts = firstLine.split(' - ');
-      companyName = parts[0].trim();
-      position = parts.slice(1).join(' - ').trim();
-      title = firstLine;
+      companyName = sanitizeTitleOrCompany(parts[0], "채용 기업");
+      position = sanitizeTitleOrCompany(parts.slice(1).join(' - '), "해당 직무");
+      title = `${companyName} - ${position}`;
     } else {
-      title = firstLine.slice(0, 60);
-      position = title;
+      const sanitized = sanitizeTitleOrCompany(firstLine.slice(0, 60), "해당 직무");
+      title = sanitized;
+      position = sanitized;
     }
   }
 
@@ -259,24 +304,9 @@ function pureLocalScrapeEngine(url: string, inputText: string) {
 
   if (tasks.length === 0) tasks.push("공고 원문 텍스트의 주요 담당 업무 항목 참조");
   if (requirements.length === 0) requirements.push("관련 직무 실무 경험 및 문제 해결 역량 보유자");
-  if (preferred.length === 0) preferred.push("유관 학과 전공자 또는 대규모 서비스 운영 프로젝트 경험자");
+  if (preferred.length === 0) preferred.push("유관 전공자 또는 해당 직무 관련 프로젝트 경험자");
 
-  const keywordsSet = new Set<string>();
-  const dictionary = [
-    "React", "TypeScript", "JavaScript", "Node.js", "Next.js", "Python", "Java", "Go",
-    "Kubernetes", "Docker", "AWS", "Flutter", "Kotlin", "Swift", "Figma", "GA4", "SQL",
-    "Git", "C++", "Vue.js", "Spring", "Django", "FastAPI", "Electrophysiology", "Product Management",
-    "Data Analysis", "Project Management", "Marketing", "Communication", "English", "Korean", "Excel"
-  ];
-
-  for (const kw of dictionary) {
-    if (new RegExp('\\b' + kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i').test(inputText)) {
-      keywordsSet.add(kw);
-    }
-  }
-
-  const keywords = Array.from(keywordsSet);
-  if (keywords.length === 0) keywords.push("채용공고", "직무역량", "실무경험");
+  const keywords = extractFallbackKeywords(inputText);
 
   let dueDate = "데드라인 미정 (상시/채용시 마감)";
   const isAlwaysOpen = /until\s*filled|상시\s*채용|채용시\s*마감|rolling\s*basis|TBD|미정|상시/i.test(inputText);
@@ -323,16 +353,23 @@ export async function localAnalyzeMatch(job: any, userResume: any) {
     ? userResume.attachedFiles.map((f: any) => `[서류: ${f.name}]\n${f.extractedText || ''}`).join('\n\n')
     : '';
 
+  const cleanPos = sanitizeTitleOrCompany(job.position, '해당 직무');
+  const cleanCompany = sanitizeTitleOrCompany(job.companyName, '해당 기업');
+
   // 1. Try Gemini AI Match Analysis First
   try {
-    const aiMatchPrompt = `다음 채용공고와 구직자 이력서를 대조하여 이력서 적합도 분석 결과를 JSON으로 제공해줘.
+    const aiMatchPrompt = `다음 채용공고와 구직자 이력서를 엄격하게 비교 대조하여 이력서 적합도 분석 결과를 JSON으로 제공해줘.
+
+중요 분석 지침:
+- 구직자의 이력서 직무(예: HR, 인사)와 채용공고 직무(예: PM, 프로덕트 매니저, 개발자)의 직무 도메인이 상이하면 관대하게 점수를 주지 말고 20~45점 사이의 낮은 점수를 부여해.
+- 이력서 역량과 공고의 필수 요구사항이 얼마나 명확하게 부합하는지에 따라 0~100점 사이에서 정직하게 평가해줘.
 
 JSON Format:
 {
-  "matchScore": 85 (60~98 사이 정수),
+  "matchScore": 75 (0~100 사이 정수, 직무 도메인/스택이 현저히 다르면 20~40점대 감점 적용 필수),
   "summary": "종합 매칭 요약평가 (2~3문장)",
-  "matchedPoints": ["부합하는 강점 1", "부합하는 강점 2", "부합하는 강점 3"],
-  "improvementPoints": ["보완해야할 항목 1", "보완해야할 항목 2", "보완해야할 항목 3"],
+  "matchedPoints": ["부합하는 강점 1", "부합하는 강점 2"],
+  "improvementPoints": ["보완해야할 항목 1", "보완해야할 항목 2"],
   "matchedKeywords": ["일치하는 핵심 스택/키워드들"],
   "missingKeywords": ["이력서에 부족한 공고 우대 키워드들"],
   "resumeImprovementTips": ["이력서 보완 팁 1", "이력서 보완 팁 2"],
@@ -340,7 +377,7 @@ JSON Format:
 }
 
 [채용공고 정보]
-회사: ${job.companyName || '미정'}, 직무: ${job.position || '미정'}
+회사: ${cleanCompany}, 직무: ${cleanPos}
 주요업무/요구사항: ${(job.tasks || []).join(', ')} / ${(job.requirements || []).join(', ')} / ${(job.keywords || []).join(', ')}
 
 [구직자 이력서 내용]
@@ -353,14 +390,14 @@ JSON Format:
       return {
         success: true,
         data: {
-          matchScore: aiMatchResult.matchScore,
+          matchScore: Math.min(100, Math.max(0, aiMatchResult.matchScore)),
           summary: `[✨ Gemini 2.5 AI 분석] ${aiMatchResult.summary || '이력서 분석이 완료되었습니다.'}`,
-          matchedPoints: aiMatchResult.matchedPoints || ["보유 기술스택 및 역량이 공고 조건과 잘 일치합니다."],
-          improvementPoints: aiMatchResult.improvementPoints || ["공고 핵심 키워드를 볼드체로 강조하세요."],
-          matchedKeywords: aiMatchResult.matchedKeywords || job.keywords || [],
+          matchedPoints: aiMatchResult.matchedPoints || ["보유 역량 중 일부 항목이 공고 조건과 부합합니다."],
+          improvementPoints: aiMatchResult.improvementPoints || ["공고 핵심 직무에 부합하는 서류 내용 보강이 필요합니다."],
+          matchedKeywords: aiMatchResult.matchedKeywords || [],
           missingKeywords: aiMatchResult.missingKeywords || [],
-          resumeImprovementTips: aiMatchResult.resumeImprovementTips || ["프로젝트 성과를 수치로 표기하세요."],
-          interviewPrepQuestions: aiMatchResult.interviewPrepQuestions || ["본인의 핵심 경쟁력에 대해 설명해주세요."],
+          resumeImprovementTips: aiMatchResult.resumeImprovementTips || ["지원 직무에 맞춰 경험 및 성과를 재구성하세요."],
+          interviewPrepQuestions: aiMatchResult.interviewPrepQuestions || ["지원 직무에 관심 가지게 된 계기를 설명해주세요."],
           isAiAnalyzed: true
         }
       };
@@ -374,12 +411,28 @@ JSON Format:
 }
 
 /**
+ * Job Category Domain Classification Helper
+ */
+function detectJobDomain(text: string): string {
+  const lower = text.toLowerCase();
+  if (/hr|인사|채용|노무|인재|급여|보상|조직|rector|talent|people/i.test(lower)) return 'HR';
+  if (/pm|po|product manager|project manager|프로덕트|서비스 기획|기획자|애자일/i.test(lower)) return 'PM';
+  if (/developer|engineer|frontend|backend|fullstack|개발자|소프트웨어|엔지니어|react|typescript|python|java/i.test(lower)) return 'DEV';
+  if (/marketing|marketer|퍼포먼스|마케팅|마케터|콘텐츠|ga4|seo/i.test(lower)) return 'MARKETING';
+  if (/designer|ux|ui|디자이너|피그마|figma/i.test(lower)) return 'DESIGN';
+  return 'GENERAL';
+}
+
+/**
  * Pure Local Offline Match Analyzer (Fallback)
  */
 function pureLocalAnalyzeEngine(job: any, userResume: any, attachedFilesText: string) {
   const resumeFullText = `${userResume.title} ${userResume.summary} ${(userResume.skills || []).join(' ')} ${userResume.portfolioSummary || ''} ${attachedFilesText}`.toLowerCase();
 
-  const jobKeywords: string[] = job.keywords || [];
+  const cleanPos = sanitizeTitleOrCompany(job.position, '해당 직무');
+  const cleanCompany = sanitizeTitleOrCompany(job.companyName, '지원 기업');
+
+  const jobKeywords: string[] = (job.keywords || []).filter((k: string) => !/^(채용공고|직무역량|실무경험)$/.test(k));
   const matchedKeywords: string[] = [];
   const missingKeywords: string[] = [];
 
@@ -399,47 +452,72 @@ function pureLocalAnalyzeEngine(job: any, userResume: any, attachedFilesText: st
     }
   }
 
-  const baseScore = 65;
-  const keywordRatio = jobKeywords.length > 0 ? (matchedKeywords.length / jobKeywords.length) : 0.5;
-  const experienceBonus = Math.min(15, (userResume.experienceYears || 1) * 2);
-  const matchScore = Math.min(98, Math.max(60, Math.round(baseScore + (keywordRatio * 20) + experienceBonus)));
+  // Domain Mismatch Penalty Logic
+  const jobDomain = detectJobDomain(`${job.title || ''} ${job.position || ''} ${(job.keywords || []).join(' ')}`);
+  const resumeDomain = detectJobDomain(`${userResume.title || ''} ${userResume.summary || ''} ${(userResume.skills || []).join(' ')}`);
 
-  const matchedPoints: string[] = [
-    matchedKeywords.length > 0
-      ? `구직자의 보유 핵심 역량인 [${matchedKeywords.slice(0, 3).join(', ')}]가 공고의 요구 기술스택 및 필수 자격요건과 명확하게 일치합니다.`
-      : `보유 경력 연차(${userResume.experienceYears || 1}년) 및 관련 분야 기초 역량이 공고 직무 R&R과 부합합니다.`,
-    `이력서/첨부 서류에 작성된 프로젝트 성과 및 실무 역량이 ${job.position || '해당'} 직무 수행에 긍정적인 평가 요소입니다.`,
-    `프로필 상단 및 경력기술서 내 주도적 업무 수행 경험이 직무 요구사항의 기준을 충족합니다.`
-  ];
+  let domainPenalty = 0;
+  const isDomainMismatch = (jobDomain !== 'GENERAL' && resumeDomain !== 'GENERAL' && jobDomain !== resumeDomain);
+  if (isDomainMismatch) {
+    domainPenalty = 30; // 30-point heavy penalty for HR vs PM/DEV mismatch
+  }
 
-  const improvementPoints: string[] = [
-    missingKeywords.length > 0
-      ? `공고의 우대 및 기술 키워드인 [${missingKeywords.slice(0, 3).join(', ')}] 관련 직접/간접 실무 경험을 서류 본문에 명시적으로 보강할 필요가 있습니다.`
-      : `공고 요구사항의 핵심 키워드를 이력서 상단 요약문에 볼드체로 강조하여 가독성을 극대화할 수 있습니다.`,
-    `프로젝트 성과를 수치화된 정량 지표(예: KPI 개선율, 처리 속도 향상 %, 매출 증대 등)로 구체화하면 서류 합격률이 높아집니다.`,
-    `${job.companyName || '지원 기업'}의 비전 및 직무 우대 사항에 맞춘 맞춤형 지원 동기를 서류 첫 단락에 추가 배치하는 것을 권장합니다.`
-  ];
+  const baseScore = 35;
+  const keywordRatio = jobKeywords.length > 0 ? (matchedKeywords.length / jobKeywords.length) : 0.2;
+  const experienceBonus = Math.min(10, (userResume.experienceYears || 1) * 1.5);
+  
+  const rawScore = baseScore + (keywordRatio * 45) + experienceBonus - domainPenalty;
+  const matchScore = Math.min(98, Math.max(15, Math.round(rawScore)));
+
+  const matchedPoints: string[] = [];
+  if (matchedKeywords.length > 0) {
+    matchedPoints.push(`보유 역량 중 [${matchedKeywords.slice(0, 3).join(', ')}] 관련 경험이 공고의 일부 요구사항과 부합합니다.`);
+  } else {
+    matchedPoints.push(`보유 경력 연차(${userResume.experienceYears || 1}년) 및 관련 기초 업무 경험이 지원 서류의 바탕이 됩니다.`);
+  }
+
+  if (!isDomainMismatch) {
+    matchedPoints.push(`지원 공고(${cleanPos}) 분야와 구직자 직무 카테고리가 상통하여 관련 직무 수행 가능성이 있습니다.`);
+  } else {
+    matchedPoints.push(`직무 도메인 차이(${resumeDomain} → ${jobDomain})가 있으나 조직 내 프로젝트 협업 역량을 어필해볼 수 있습니다.`);
+  }
+
+  const improvementPoints: string[] = [];
+  if (isDomainMismatch) {
+    improvementPoints.push(`현재 이력서는 [${resumeDomain}] 중심인 반면, 지원 공고는 [${jobDomain}] 직무로 직무 카테고리가 달라 서류 적합도 점수가 대폭 차감되었습니다.`);
+  }
+  if (missingKeywords.length > 0) {
+    improvementPoints.push(`공고 요구 키워드인 [${missingKeywords.slice(0, 3).join(', ')}] 관련 실무 경험 및 기술 스택 보감이 필수적입니다.`);
+  } else {
+    improvementPoints.push(`프로젝트 성과를 수치화된 정량 지표(예: KPI 개선율, 효율성 % 향상 등)로 더 명확히 기술할 필요가 있습니다.`);
+  }
 
   const resumeImprovementTips: string[] = [
-    `지원 기업(${job.companyName || '해당 기업'})의 주요 과제와 연관된 본인의 트러블슈팅 경험을 헤드라인으로 강조하세요.`,
+    isDomainMismatch
+      ? `지원 직무인 [${cleanPos}]에 부합하도록 이력서 상단 요약문과 커리어 목표를 해당 직무 중심으로 전면 개편하세요.`
+      : `${cleanCompany}의 주요 사업 과제와 연결된 트러블슈팅 경험을 최상단에 강조하세요.`,
     missingKeywords.length > 0
-      ? `키워드 [${missingKeywords[0]}] 관련 유사 기술이나 개념 학습 경험이 있다면 1~2문장으로 보완 언급하세요.`
-      : `프로젝트별 본인의 구체적 담당 역할과 기여도를 명확히 구분하여 서술하세요.`
+      ? `핵심 우대 키워드 [${missingKeywords[0]}] 관련 유사 프로젝트나 학습 경험을 이력서 본문에 추가하세요.`
+      : `프로젝트별 구체적인 역할과 본인의 직접 기여도를 명확히 구분하여 서술하세요.`
   ];
 
   const interviewPrepQuestions: string[] = [
-    `${job.position || '본 직무'}를 수행할 때 가장 자신 있는 본인만의 핵심 경쟁력과 구체적 프로젝트 사례는 무엇인가요?`,
-    `${job.companyName || '당사'} 공고 요구사항 중 본인이 지속적으로 보완 및 학습하고 있는 부분과 이에 대한 개선 노력은 무엇인가요?`
+    isDomainMismatch
+      ? `[${resumeDomain}] 경력 바탕에서 [${cleanPos}] 직무로 지원하게 된 구체적인 계기와 준비 과정은 무엇인가요?`
+      : `${cleanPos} 직무를 수행할 때 본인이 가장 자신 있는 핵심 경쟁력과 관련 사례를 설명해주세요.`,
+    `${cleanCompany} 지원 시 부족하다고 느낀 공고 요구사항과 이를 보완하기 위한 개인적 노력은 무엇인가요?`
   ];
 
   return {
     success: true,
     data: {
       matchScore,
-      summary: `[⚡ 오프라인 스마트 분석] 공고의 핵심 요구사항과 구직자 프로필을 대조한 결과, ${matchedKeywords.length ? matchedKeywords.join(', ') : '핵심 스택'} 관련 경력이 우수하게 일치하며 종합 매칭 점수는 ${matchScore}점입니다.`,
+      summary: isDomainMismatch
+        ? `[⚡ 오프라인 직무 분석] 이력서의 주요 직무(${resumeDomain})와 공고 요구 직무(${jobDomain}) 간 도메인 차이가 커 매칭 점수는 ${matchScore}점으로 낮게 평가되었습니다.`
+        : `[⚡ 오프라인 스마트 분석] 공고 요구사항과 이력서 프로필을 비교 대조한 결과 종합 매칭 점수는 ${matchScore}점입니다.`,
       matchedPoints,
       improvementPoints,
-      matchedKeywords: matchedKeywords.length ? matchedKeywords : ["React", "TypeScript"],
+      matchedKeywords: matchedKeywords.length ? matchedKeywords : [],
       missingKeywords,
       resumeImprovementTips,
       interviewPrepQuestions,
@@ -447,3 +525,4 @@ function pureLocalAnalyzeEngine(job: any, userResume: any, attachedFilesText: st
     }
   };
 }
+
