@@ -378,8 +378,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 <FileText className="w-4 h-4 text-[#2EB0A6]" />
                 <span>내 서류 드래그 & 공고 적합도/개선점 비교</span>
               </h3>
-              <span className="text-[11px] text-[#2EB0A6] font-bold bg-[#E6F7F5] px-2 py-0.5 rounded border border-[#2EB0A6]/30">
-                실시간 Gemini 매칭
+              <span className="text-[11px] text-[#2EB0A6] font-bold bg-[#E6F7F5] px-2.5 py-1 rounded-lg border border-[#2EB0A6]/30" title="입력 데이터는 구글 모델 학습 미반영 파이프라인으로 처리되나 Gemini 자체 반영 건은 책임을 지지 않습니다">
+                🔒 외부 AI 학습 차단 1회성 갭(Gap) 진단
               </span>
             </div>
 

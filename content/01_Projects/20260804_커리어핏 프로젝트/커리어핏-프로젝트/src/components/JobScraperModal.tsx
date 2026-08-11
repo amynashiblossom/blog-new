@@ -493,8 +493,11 @@ ${(parsedData.preferred || []).map(p => '- ' + p).join('\n')}`,
           <div className="p-3 bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl text-[11px] text-[#6A6A6A] leading-relaxed flex items-start gap-2">
             <span className="text-sm mt-0.5">🔒</span>
             <div>
-              <p className="font-semibold text-[#0A0A0A]">개인정보 및 데이터 보안 고지</p>
-              <p>입력하신 채용 공고와 분석에 사용된 이력서 데이터는 서버에 저장되지 않으며, 오직 사용자의 브라우저(로컬 스토리지)에만 임시 보관됩니다.</p>
+              <p className="font-semibold text-[#0A0A0A]">경영민감정보 및 데이터 보안 고지</p>
+              <p>
+                입력하신 경영민감정보 및 이력서 데이터는 커리어핏 외부 서버에 저장되지 않으며, 암호화되어 오직 사용자의 로컬 브라우저(스토리지)에만 안전하게 보관됩니다.
+                <span className="block mt-1 text-[#8A5B00] font-medium">* 다만 커리어핏과 무관하게 Gemini 자체적으로 정보를 수집/활용하려고 하는 경우 커리어핏 서비스에 책임이 없음을 고지합니다.</span>
+              </p>
             </div>
           </div>
 

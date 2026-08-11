@@ -110,10 +110,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Button - Gemini AI Integration & Primary Action */}
           <div className="flex items-center gap-2 shrink-0 relative">
-            <div className="px-2.5 py-1.5 bg-gradient-to-r from-[#E6F7F5] to-amber-50 border border-[#2EB0A6]/40 rounded-xl flex items-center gap-1.5 text-xs font-bold text-[#2EB0A6]">
-              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
-              <span className="hidden sm:inline">✨ Gemini 2.5 AI 연동</span>
-              <span className="text-[10px] text-gray-500 font-normal hidden lg:inline">(.env 자동적용)</span>
+            <div className="px-3 py-1.5 bg-gradient-to-r from-[#E6F7F5] to-amber-50 border border-[#2EB0A6]/40 rounded-xl flex items-center gap-2 text-xs font-bold text-[#2EB0A6] shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-[#2EB0A6] shrink-0" />
+              <div className="hidden lg:flex flex-col text-left">
+                <span className="text-xs font-extrabold text-[#2EB0A6] flex items-center gap-1">
+                  🔒 외부 AI 학습을 차단하는 1회성 API 연동 기반의 실시간 갭(Gap) 진단
+                </span>
+                <span className="text-[10px] text-[#555555] font-normal" title="학습 미반영 파이프라인 처리하나 Gemini 프로바이더 단의 자체 반영 건은 책임지지 않습니다">
+                  (※ 구글 모델 학습 미반영 파이프라인 처리 / Gemini 자체 반영 건 책임 제외)
+                </span>
+              </div>
+              <span className="lg:hidden text-xs font-bold">🔒 1회성 AI 갭(Gap) 진단</span>
             </div>
 
             <button

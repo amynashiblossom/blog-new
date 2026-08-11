@@ -74,6 +74,107 @@ async function callGeminiAPI(prompt: string): Promise<any> {
 }
 
 /**
+ * Smart Text Parser to accurately extract Company Name & Position from raw text or URL
+ */
+function smartExtractCompanyAndPosition(inputText: string, url: string = '') {
+  const lines = inputText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const topLines = lines.slice(0, 10);
+  const fullText = inputText;
+
+  let companyName = '';
+  let position = '';
+  let title = topLines[0] || '채용 공고';
+
+  // 1. Check Explicit Line Labels (e.g. "회사명: OOO", "기업명: OOO", "직무: OOO")
+  for (const line of topLines) {
+    const compMatch = line.match(/(?:회사명|기업명|Company|Company Name)\s*[:|-]\s*(.+)/i);
+    if (compMatch && compMatch[1] && !companyName) {
+      companyName = compMatch[1].trim();
+    }
+    const posMatch = line.match(/(?:직무|포지션|Role|Position|채용\s*직무)\s*[:|-]\s*(.+)/i);
+    if (posMatch && posMatch[1] && !position) {
+      position = posMatch[1].trim();
+    }
+  }
+
+  // 2. Bracket or Delimiter Patterns in Top Lines (e.g. "[Company] Position", "Company - Position", "Company | Position")
+  if (topLines.length > 0) {
+    for (const line of topLines.slice(0, 3)) {
+      // Bracket pattern: [회사명] 포지션
+      const bracketMatch = line.match(/^\[(.*?)\]\s*(.*)/);
+      if (bracketMatch) {
+        if (!companyName) companyName = bracketMatch[1].trim();
+        if (!position && bracketMatch[2]) position = bracketMatch[2].trim();
+        title = line;
+        break;
+      }
+
+      // Delimiter patterns: Company - Position or Company | Position
+      let foundDelim = false;
+      for (const delim of [' - ', ' | ', ' / ', ' : ']) {
+        if (line.includes(delim)) {
+          const parts = line.split(delim);
+          if (parts.length >= 2 && parts[0].trim().length > 1) {
+            if (!companyName) companyName = parts[0].trim();
+            if (!position) position = parts.slice(1).join(delim).trim();
+            title = line;
+            foundDelim = true;
+            break;
+          }
+        }
+      }
+      if (foundDelim) break;
+    }
+  }
+
+  // 3. Search "About [Company]" or "About Company Name" or "주식회사 [Company]" in text
+  if (!companyName) {
+    const aboutMatch = fullText.match(/(?:About|회사\s*소개|기업\s*소개|근무처)\s+([A-Za-z0-9가-힣&(주)]+)/i);
+    if (aboutMatch && aboutMatch[1]) {
+      companyName = aboutMatch[1].trim();
+    }
+  }
+
+  // 4. Search Company / Brand Name from URL if available (Strictly EXCLUDE recruitment platform aggregators like LinkedIn, Wanted, Saramin, etc.)
+  if (!companyName && url) {
+    try {
+      const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
+      const host = parsedUrl.hostname.toLowerCase().replace('www.', '');
+      
+      // 채용 플랫폼 도메인은 채용 기업이 아니므로 회사명 추론 대상에서 엄격히 제외
+      const isAggregatorPlatform = /linkedin|wanted|jobkorea|saramin|remember|blind|incruit|catch|rocketpunch|glassdoor/i.test(host);
+      
+      if (!isAggregatorPlatform) {
+        const domainName = host.split('.')[0];
+        if (domainName && domainName.length > 2) {
+          companyName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
+        }
+      }
+    } catch (_e) {
+      // Ignore URL parse error
+    }
+  }
+
+  // 5. Search Position Title from Top Lines using Role keywords
+  if (!position) {
+    const roleKeywords = /(?:Manager|PM|PO|Engineer|Developer|Analyst|Lead|Specialist|Designer|Marketer|기획자|담당자|매니저|엔지니어|개발자|분석가|디자이너|리드|스페셜리스트|코디네이터)/i;
+    for (const line of topLines) {
+      if (roleKeywords.test(line) && line.length < 80) {
+        position = line;
+        break;
+      }
+    }
+  }
+
+  // Fallback to top line text if still empty
+  const defaultHeader = topLines[0] || '채용 공고';
+  if (!companyName) companyName = defaultHeader.slice(0, 50);
+  if (!position) position = defaultHeader.slice(0, 60);
+
+  return { companyName, position, title };
+}
+
+/**
  * Job Description Scraper & Parser
  * Tries Gemini AI API first; if unavailable or failed, smoothly falls back to local regex engine.
  */
@@ -138,16 +239,23 @@ At Johnson & Johnson MedTech, we’re changing the trajectory of health for huma
     throw new Error('파싱할 채용공고 텍스트가 유효하지 않습니다.');
   }
 
+  const smartExtracted = smartExtractCompanyAndPosition(inputText, url);
+
   // 1. Try Gemini AI API First
   try {
-    const aiPrompt = `다음 채용공고 텍스트에서 주요 직무 정보 및 요구사항을 분석하여 JSON 형식으로 응답해줘.
-텍스트에 이미지 alt 속성이나 '회사 로고', 'logo', 웹사이트 주소 등의 노이즈가 포함되어 있으면 직무명/회사명에서 제거하고 실제 직무와 기업명만 추출해줘.
+    const aiPrompt = `다음 채용공고 텍스트에서 기업명과 담당 직무/포지션을 포함한 주요 공고 정보를 정교하게 분석하여 JSON으로 응답해줘.
+
+추출 정교화 지침:
+1. companyName: 원문의 상단 헤더, '[회사명]', 'About 회사명', '기업명:', 'Company:' 또는 브랜드명에서 실제 채용 기업명을 정확하게 분리 추출해줘. (주의: 링크드인, 원티드, 잡코리아, 사람인 등 공고가 올라온 중개 플랫폼 이름이 아니라 실제 인재를 채용하는 기업/브랜드명을 추출해야 합니다.)
+2. position: 채용하는 포지션명/직무명(예: 'Associate Product Manager', 'Localization PM', 'Frontend Developer' 등)만 정확하게 추출해줘. 뒤에 붙는 불필요한 '채용안내/모집공고' 단어는 제거해줘.
+3. title: 공고 전체 대표 제목
+4. dueDate: 특정 날짜(YYYY-MM-DD)가 있으면 날짜로, 없거나 상시/채용시 마감이면 '데드라인 미정 (상시/채용시 마감)'으로 명시해줘.
 
 JSON format:
 {
-  "companyName": "회사명 (추정 불가능하거나 노이즈 텍스트면 '채용 기업')",
+  "companyName": "회사명 (예: Johnson & Johnson, 토스, LocalizationJobs 등)",
   "title": "채용공고 전체 제목",
-  "position": "직무/포지션명 (노이즈 제거 후 명확한 직무명)",
+  "position": "직무/포지션명 (예: Product Manager, 현지화 PM, 백엔드 개발자 등)",
   "dueDate": "마감일 (YYYY-MM-DD 포맷 또는 '데드라인 미정 (상시/채용시 마감)')",
   "tasks": ["주요 업무 1", "주요 업무 2"],
   "requirements": ["필수 자격요건 1", "필수 자격요건 2"],
@@ -161,20 +269,25 @@ JSON format:
 ${inputText.slice(0, 4000)}`;
 
     const aiParsed = await callGeminiAPI(aiPrompt);
-    if (aiParsed && aiParsed.companyName && aiParsed.position) {
-      const cleanCompany = sanitizeTitleOrCompany(aiParsed.companyName, '채용 기업');
-      const cleanPos = sanitizeTitleOrCompany(aiParsed.position, '직무 역량 보유자');
+    if (aiParsed) {
+      let cleanCompany = aiParsed.companyName && aiParsed.companyName !== '채용 기업'
+        ? aiParsed.companyName.trim()
+        : smartExtracted.companyName;
+
+      let cleanPos = aiParsed.position && aiParsed.position !== '해당 직무'
+        ? aiParsed.position.trim()
+        : smartExtracted.position;
 
       return {
         success: true,
         data: {
           companyName: cleanCompany,
-          title: aiParsed.title || `${cleanCompany} - ${cleanPos}`,
+          title: aiParsed.title || smartExtracted.title || `${cleanCompany} - ${cleanPos}`,
           position: cleanPos,
           dueDate: aiParsed.dueDate || '데드라인 미정 (상시/채용시 마감)',
-          tasks: Array.isArray(aiParsed.tasks) ? aiParsed.tasks : [aiParsed.tasks],
-          requirements: Array.isArray(aiParsed.requirements) ? aiParsed.requirements : [aiParsed.requirements],
-          preferred: Array.isArray(aiParsed.preferred) ? aiParsed.preferred : [aiParsed.preferred],
+          tasks: Array.isArray(aiParsed.tasks) && aiParsed.tasks.length > 0 ? aiParsed.tasks : [aiParsed.tasks || "주요 업무 원문 참조"],
+          requirements: Array.isArray(aiParsed.requirements) && aiParsed.requirements.length > 0 ? aiParsed.requirements : [aiParsed.requirements || "자격 요건 원문 참조"],
+          preferred: Array.isArray(aiParsed.preferred) ? aiParsed.preferred : [],
           keywords: Array.isArray(aiParsed.keywords) && aiParsed.keywords.length > 0 ? aiParsed.keywords : extractFallbackKeywords(inputText),
           location: aiParsed.location || "원문 참조",
           salary: aiParsed.salary || "채용 시 협의",
@@ -195,15 +308,13 @@ ${inputText.slice(0, 4000)}`;
 }
 
 /**
- * Clean noise texts like "회사 로고", "logo", urls, etc.
+ * Clean whitespace and basic symbols, but preserve original text
  */
 function sanitizeTitleOrCompany(rawStr: string, fallback: string): string {
   if (!rawStr) return fallback;
   let cleaned = rawStr.trim();
-  // Remove noise keywords
-  cleaned = cleaned.replace(/회사\s*로고|logo|icon|img|image|http\S+|www\.\S+|localizationjobs\.com/gi, '').trim();
   cleaned = cleaned.replace(/^[-_:|\s]+|[-_:|\s]+$/g, '').trim();
-  if (cleaned.length < 2) return fallback;
+  if (!cleaned) return fallback;
   return cleaned;
 }
 
@@ -238,31 +349,12 @@ function extractFallbackKeywords(text: string): string[] {
  * Pure Local Offline Scraper Engine (Fallback)
  */
 function pureLocalScrapeEngine(url: string, inputText: string) {
+  const smart = smartExtractCompanyAndPosition(inputText, url);
+
   const lines = inputText.split('\n');
-
-  let companyName = "채용 기업";
-  let title = "스크랩된 채용공고";
-  let position = "해당 직무";
-
-  const nonBlankLines = lines.map(l => l.trim()).filter(l => l.length > 0);
-  if (nonBlankLines.length > 0) {
-    const firstLine = nonBlankLines[0];
-    const bracketMatch = firstLine.match(/^\[(.*?)\]\s*(.*)/);
-    if (bracketMatch) {
-      companyName = sanitizeTitleOrCompany(bracketMatch[1], "채용 기업");
-      title = firstLine;
-      if (bracketMatch[2]) position = sanitizeTitleOrCompany(bracketMatch[2], "해당 직무");
-    } else if (firstLine.includes(' - ')) {
-      const parts = firstLine.split(' - ');
-      companyName = sanitizeTitleOrCompany(parts[0], "채용 기업");
-      position = sanitizeTitleOrCompany(parts.slice(1).join(' - '), "해당 직무");
-      title = `${companyName} - ${position}`;
-    } else {
-      const sanitized = sanitizeTitleOrCompany(firstLine.slice(0, 60), "해당 직무");
-      title = sanitized;
-      position = sanitized;
-    }
-  }
+  const companyName = smart.companyName;
+  const title = smart.title;
+  const position = smart.position;
 
   let currentSection: 'intro' | 'tasks' | 'requirements' | 'preferred' | 'etc' = 'intro';
   const tasks: string[] = [];

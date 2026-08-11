@@ -19,7 +19,8 @@ import {
   TrendingUp, 
   Layers, 
   CheckCircle2, 
-  ArrowUpRight 
+  ArrowUpRight,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function App() {
@@ -175,6 +176,24 @@ export default function App() {
       {/* Main App Canvas */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
+        {/* Security & AI Pipeline Notice Banner */}
+        <div className="p-3.5 bg-[#E6F7F5]/90 border border-[#2EB0A6]/40 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#2EB0A6] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div className="text-xs text-[#0A0A0A]">
+              <span className="font-extrabold text-[#0A0A0A]">🔒 외부 AI 학습을 차단하는 1회성 API 연동 기반의 실시간 갭(Gap) 진단</span>
+              <span className="text-[#555555] ml-1.5 font-medium block sm:inline mt-0.5 sm:mt-0">
+                (※ 입력 데이터는 구글 모델 학습에 활용되지 않도록 파이프라인 처리/학습 미반영하나, Gemini 자체 반영 건에 대해서는 책임을 지지 않습니다)
+              </span>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 bg-white border border-[#2EB0A6]/30 text-[#2EB0A6] text-[11px] font-bold rounded-lg whitespace-nowrap self-end md:self-auto shrink-0 shadow-2xs">
+            ✨ 보안 파이프라인 가동 중
+          </span>
+        </div>
+
         {/* Metric Summary Cards Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-4 bg-white rounded-2xl border border-[#EAE5DC] shadow-2xs flex items-center justify-between">

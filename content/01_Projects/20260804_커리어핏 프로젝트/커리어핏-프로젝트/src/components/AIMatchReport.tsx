@@ -160,19 +160,23 @@ export const AIMatchReport: React.FC<AIMatchReportProps> = ({
           {activeJob ? (
             <>
               {/* Selected Job Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAE5DC] pb-4">
-                <div>
-                  <span className="text-xs font-bold text-[#2EB0A6] bg-[#E6F7F5] px-2.5 py-1 rounded-full">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#EAE5DC] pb-4">
+                <div className="flex-1 min-w-0">
+                  <span className="inline-block text-xs font-bold text-[#2EB0A6] bg-[#E6F7F5] px-2.5 py-1 rounded-full">
                     {activeJob.companyName}
                   </span>
-                  <h2 className="text-xl font-extrabold text-[#0A0A0A] mt-2">{activeJob.title}</h2>
-                  <p className="text-xs text-[#6A6A6A] mt-1">{activeJob.position} | 마감일: {activeJob.dueDate}</p>
+                  <h2 className="text-xl font-extrabold text-[#0A0A0A] mt-2 leading-snug">{activeJob.title}</h2>
+                  <p className="text-xs text-[#6A6A6A] mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span>{activeJob.position}</span>
+                    <span>•</span>
+                    <span>마감일: {activeJob.dueDate}</span>
+                  </p>
                 </div>
 
                 <button
                   onClick={handleRunAnalysis}
                   disabled={isAnalyzing}
-                  className="px-4 py-2.5 bg-[#2EB0A6] hover:bg-[#228B83] text-white font-bold text-xs rounded-xl shadow-md shadow-[#2EB0A6]/20 transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+                  className="self-start sm:mt-0.5 px-4 py-2.5 bg-[#2EB0A6] hover:bg-[#228B83] text-white font-bold text-xs rounded-xl shadow-md shadow-[#2EB0A6]/20 transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
                 >
                   <RefreshCw className={`w-4 h-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
                   <span>{activeJob.matchAnalysis ? 'Gemini AI 재분석 실행' : 'Gemini AI 역량 진단 실행'}</span>
