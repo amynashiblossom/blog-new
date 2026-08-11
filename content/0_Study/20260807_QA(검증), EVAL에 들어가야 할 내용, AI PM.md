@@ -3,6 +3,8 @@ title: 20260807_QA(검증)
 tags:
   - EVALs
   - 합격기준설계법
+  - aipm
+  - Eval
 date: 2026-08-07
 publish: true
 ---
