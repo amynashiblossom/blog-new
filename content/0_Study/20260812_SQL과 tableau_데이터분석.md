@@ -258,3 +258,12 @@ it's 라면 "it''s"로 하기도 함.
 ![[20260812_SQL과 tableau_데이터분석-23.png]]
 
 
+실행순서가 FWGHSO
+From Where Group by Having Select Order by(오더바이는 무조건 제일 나중에)
+
+![[20260812_SQL과 tableau_데이터분석-24.png]]
+"the%"만 찾고 싶다면
+**=="the %"이렇게 공백까지 같이 포함시켜서 like "the %"로 가자!!!==**
+
+is로 
+
