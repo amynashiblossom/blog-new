@@ -238,3 +238,7 @@ where not a = 0; 대신에 where a <> 0 로 표기
 ![[20260812_SQL과 tableau_데이터분석-19.png]]*
 
 *데이터를 가져온 후에는 localhost* 와 gangdong으로 바꿔야![[20260812_SQL과 tableau_데이터분석-20.png]]
+
+*어떤 데이터를 먼저 가지고 있는지 쫙 보신 후에 진행하시는 편 
+![[20260812_SQL과 tableau_데이터분석-21.png]]
+
