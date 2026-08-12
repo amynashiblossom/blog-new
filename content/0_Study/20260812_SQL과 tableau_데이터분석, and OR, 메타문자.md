@@ -1,6 +1,12 @@
 ---
 title: 20260812_SQL과 tableau_데이터분석
 tags:
+  - SQL
+  - MYSQL
+  - 데이터분석
+  - AND
+  - OR
+  - 메타문자
 date: 2026-08-12
 publish: true
 ---
@@ -189,7 +195,8 @@ ctrl + 엔터면 실행된다.
 
 왜 생일이 null이라고 치면 안나올까?
 ![[20260812_SQL과 tableau_데이터분석-13.png]]
-null은 is null로 쳐야 나옴
+[NULL처리]
+#null 은 is null로 쳐야 나옴
 
 = null 이 아니라 is null로 
 
@@ -213,10 +220,10 @@ where address is null;
 
 ![[20260812_SQL과 tableau_데이터분석-15.png]]
 
-
+#AND #OR
 *여러개의 조건 조합을 할때 
-조건을 조합할 때 AND를 사용함.
-AND는 모든 조건이 TRUE 여야만 출력이 됨.
+조건을 조합할 때 #AND 를 사용함.
+#AND 는 모든 조건이 TRUE 여야만 출력이 됨.
 
 ![[20260812_SQL과 tableau_데이터분석-16.png]]
 
