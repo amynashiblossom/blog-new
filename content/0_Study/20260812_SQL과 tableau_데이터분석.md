@@ -265,5 +265,6 @@ From Where Group by Having Select Order by(오더바이는 무조건 제일 나�
 "the%"만 찾고 싶다면
 **=="the %"이렇게 공백까지 같이 포함시켜서 like "the %"로 가자!!!==**
 
-is로 
+is로 연결하려 하는 부분들이 있었는데
+is null로 하는거 외에는 a=1 이런식으로 합시다!
 
