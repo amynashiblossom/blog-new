@@ -7,6 +7,6 @@ publish: true
 Data에 맥락과 의미가 부여되면 정보 information
 DIKW 피라미드
 action/Wisdom : 통찰을 바탕으로 의사 결정을 내리는 것
-knowledge
+knowledge/insight(지식/통찰)
 Information
 Data - 사실, 수치, 기호의 나열
