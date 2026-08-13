@@ -6,6 +6,7 @@ tags:
   - round
   - concat
   - datediff
+  - case
 date: 2026-08-13
 publish: true
 ---
@@ -177,3 +178,29 @@ case~로 end, 맺고 country (asc) 하면 다시 country는 3 내에서는 순�
 !!! 한 덩이로 보는것이 편하다!!!
 ![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-11.png]]
 
+case와 order by 같이 쓸 때 한 덩이로 보는 것의 중요성
+select도 아무리 길어도 select다 이렇게 구조를 보는 것이 중요
+
+그리고 정렬할때도 다시 order by 내에 case 넣어서 정렬시킬 수 있음
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case.png]]
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case-1.png]]
+
+주의할 부분은 case가 = 일때만 생략가능하고
+case가 부등호일때는 saleslevel =  생략안된다!!!
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case-2.png]]
+
+**==case에서 like를 쓸 수 있을때에는 "~한 상태"와 함께 쓸 때에만 가능하다!==**
+**==query쓸 때 자동완성값을 사용하는게 더 안전하다!!**==
+==**자동완성을 많이 사용하자==**
+
+ **==자동완성된 값+탭을 누르는게==** 안전하다!
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case-3.png]]
+더이상 가져올 칼럼 없는데 ,을 쓰는 것 주의!!!!!
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case-4.png]]연습문제4번의 답
+
+datediff는 ('큰 날짜', invociedate ) <=90 then '최근주문'
+
+case 구문으로 많이 익숙해질정도로 계속 하는 게 중요하다고 생각됨
