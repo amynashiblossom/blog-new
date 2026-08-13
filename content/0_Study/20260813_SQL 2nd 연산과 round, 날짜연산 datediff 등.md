@@ -1,6 +1,11 @@
 ---
-title:
+title: 20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등
 tags:
+  - SQL
+  - 날짜연산
+  - round
+  - concat
+  - datediff
 date: 2026-08-13
 publish: true
 ---
@@ -112,3 +117,63 @@ interval  day나 year 하면 과거로 돌아갈 수도 있거나 다음날짜�
 datediff라고하면 날짜가 얼만큼 지났는지 알 수 있음
 select datediff('2026-08-13', '2026-01-01');
 ![[20260813_SQL 2nd-25.png]]
+==datediff는 앞에서 뒤를 뺀다!!!==
+==그래서 얼마나 지났는지 순방향은 앞에지금 , 뒤에 과거 숫자==
+==주문으로부터 얼마나 걸렸는지,==
+==월 분기, 얼마나 사람들이 이탈했는지 등을 구할때== 
+
+#datediff diffday로 별칭삼아 하는 문제
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등.png]]
+datediff
+와 반대로 
+select #timestampdiff(second,)
+timestampdiff는 뒤에서 앞을 뺀다!!!!  year, second, day등 다양하게 바꿀 순 있지만
+select #timestampdiff(second,)
+
+select #timestampdiff(second,)![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-1.png]]
+
+참고
+![[Pasted image 20260813160639.png]]
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-3.png]]
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-4.png]]
+
+#case 
+조건문
+![[Pasted image 20260813161156.png]]
+
+값에 라벨링 할 때 많이 사용
+ ==#case 도 첫번째는 select에서 사용된다!!!!!!!!!!!!!!==
+조건별로 나눠지게 된 상황
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-6.png]]
+
+
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-7.png]]
+
+else "~구" 따로 빼는건 복잡해지기에 보통은 address로 만듦
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-8.png]]
+
+select  * , 
+case
+ a=1 
+ case는 라벨링을 한다.
+ #구간화
+ #binning
+ 수치형 데이터로 그룹핑 하는 것
+구간별 라벨을 부여해서 
+데이터 요약이나 분석결과 해석을 쉽게 해줌
+
+구매금액 구간별 고객 분류(vip,일반)
+-비즈니스 보고서에 가격대별 상품 개수
+![[Pasted image 20260813164545.png]]
+
+case와 order by를 같이 쓰는 상황
+![[Pasted image 20260813164915.png]]
+case~로 end, 맺고 country (asc) 하면 다시 country는 3 내에서는 순서대로 나열 가능
+
+즉 case로는 하나의 덩어리라고 생각하면 좋다
+
+!!! 한 덩이로 보는것이 편하다!!!
+![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등-11.png]]
+
