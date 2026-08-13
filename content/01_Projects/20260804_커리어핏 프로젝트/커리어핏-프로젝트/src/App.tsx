@@ -20,7 +20,9 @@ import {
   Layers, 
   CheckCircle2, 
   ArrowUpRight,
-  ShieldCheck
+  ShieldCheck,
+  ExternalLink,
+  Lightbulb
 } from 'lucide-react';
 
 export default function App() {
@@ -192,6 +194,37 @@ export default function App() {
           <span className="px-2.5 py-1 bg-white border border-[#2EB0A6]/30 text-[#2EB0A6] text-[11px] font-bold rounded-lg whitespace-nowrap self-end md:self-auto shrink-0 shadow-2xs">
             ✨ 보안 파이프라인 가동 중
           </span>
+        </div>
+
+        {/* 저장된 내 서류/공고 확인 안내 배너 */}
+        <div className="p-4 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start gap-3.5 shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-amber-100/80 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs font-bold text-base">
+            💡
+          </div>
+          <div className="flex-1 text-xs space-y-1.5 text-amber-950">
+            <h4 className="font-bold text-sm text-amber-950 flex items-center gap-1.5">
+              저장된 내 서류/공고 확인 안내
+            </h4>
+            <p className="text-amber-900 leading-relaxed font-medium">
+              작성하신 데이터는 현재 사용 중이신 브라우저에 안전하게 보관됩니다.
+            </p>
+            <p className="text-amber-900 leading-relaxed font-medium">
+              언제든 북마크해두시거나{' '}
+              <a
+                href="https://careerfit-app-ten.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold underline text-amber-900 hover:text-amber-700 inline-flex items-center gap-0.5"
+              >
+                https://careerfit-app-ten.vercel.app/
+                <ExternalLink className="w-3.5 h-3.5 inline" />
+              </a>
+              {' '}주소로 직접 접속하시면 저장해두신 공고와 분석 결과를 다시 확인하실 수 있습니다.
+            </p>
+            <p className="text-amber-800/80 text-[11px] pt-0.5 font-normal">
+              (※ 다른 브라우저나 기기, 시크릿 모드로 접속 시에는 로컬 저장소가 달라져 보이지 않을 수 있습니다.)
+            </p>
+          </div>
         </div>
 
         {/* Metric Summary Cards Bar */}

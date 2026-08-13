@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UserResume, ResumeFile } from '../types';
-import { X, Save, Plus, Trash2, FileText, UploadCloud, FileCheck, CheckCircle2, FileCode, AlertCircle, FileSpreadsheet, Eye } from 'lucide-react';
+import { X, Save, Plus, Trash2, FileText, UploadCloud, FileCheck, CheckCircle2, FileCode, AlertCircle, FileSpreadsheet, Eye, ExternalLink } from 'lucide-react';
 
 interface ResumeManagerModalProps {
   isOpen: boolean;
@@ -162,6 +162,37 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
 
         {/* Body */}
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+
+          {/* 저장된 내 서류/공고 확인 안내 카드 */}
+          <div className="p-4 bg-amber-50/90 border border-amber-200/90 rounded-xl flex items-start gap-3 text-xs">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-bold text-sm">
+              💡
+            </div>
+            <div className="flex-1 space-y-1 text-amber-950">
+              <h4 className="font-bold text-xs text-amber-950">
+                저장된 내 서류/공고 확인 안내
+              </h4>
+              <p className="text-amber-900 leading-relaxed font-medium">
+                작성하신 데이터는 현재 사용 중이신 브라우저에 안전하게 보관됩니다.
+              </p>
+              <p className="text-amber-900 leading-relaxed font-medium">
+                언제든 북마크해두시거나{' '}
+                <a
+                  href="https://careerfit-app-ten.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold underline text-amber-900 hover:text-amber-700 inline-flex items-center gap-0.5"
+                >
+                  https://careerfit-app-ten.vercel.app/
+                  <ExternalLink className="w-3 h-3 inline" />
+                </a>
+                {' '}주소로 직접 접속하시면 저장해두신 공고와 분석 결과를 다시 확인하실 수 있습니다.
+              </p>
+              <p className="text-amber-800/80 text-[11px] pt-0.5 font-normal">
+                (※ 다른 브라우저나 기기, 시크릿 모드로 접속 시에는 로컬 저장소가 달라져 보이지 않을 수 있습니다.)
+              </p>
+            </div>
+          </div>
 
           {/* Drag & Drop File Upload Zone */}
           <div>
