@@ -1,5 +1,5 @@
 ---
-title: 20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등
+title: 20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case
 tags:
   - SQL
   - 날짜연산
