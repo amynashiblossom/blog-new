@@ -201,6 +201,6 @@ case가 부등호일때는 saleslevel =  생략안된다!!!
 
 ![[20260813_SQL 2nd 연산과 round, 날짜연산 datediff 등, case-4.png]]연습문제4번의 답
 
-datediff는 ('큰 날짜', invociedate ) <=90 then '최근주문'
+datediff는 ('큰 날짜', invoicedate ) <=90 then '최근주문'
 
 case 구문으로 많이 익숙해질정도로 계속 하는 게 중요하다고 생각됨
