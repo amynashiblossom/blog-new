@@ -1,5 +1,5 @@
 ---
-title: 20260814_SQL 3일차_집계함수, groupby, having
+title: 20260814_SQL 3일차_집계함수, group by, having
 tags:
   - GROUPBY
   - SQL
@@ -8,6 +8,7 @@ tags:
   - where
   - groupby
   - orderby
+  - having
 date: 2026-08-14
 publish: true
 ---
