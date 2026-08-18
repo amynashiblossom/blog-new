@@ -1,5 +1,7 @@
 // Gemini AI API & Pure Local Fallback Engine
 // Integrates System (.env) Gemini API Key with automatic offline fallback
+import { pseudonymizeText, depseudonymizeObject } from './pseudonymization';
+
 
 /**
  * Returns System (.env) Gemini API Key
@@ -448,11 +450,20 @@ export async function localAnalyzeMatch(job: any, userResume: any) {
   const cleanPos = sanitizeTitleOrCompany(job.position, '해당 직무');
   const cleanCompany = sanitizeTitleOrCompany(job.companyName, '해당 기업');
 
+  // Combine raw resume text for Pseudonymization
+  const rawResumeContent = `제목: ${userResume.title || ''}\n요약: ${userResume.summary || ''}\n포트폴리오: ${userResume.portfolioSummary || ''}\n첨부서류: ${attachedFilesText}`;
+  
+  // Step 1: Client-Side Pseudonymization (경영민감정보: 기업명, 매출/수치, 내부 시스템명 식별 불가 가명화 처리)
+  const pseudoResult = pseudonymizeText(rawResumeContent);
+  const pseudonymizedResumeText = pseudoResult.pseudonymizedText;
+  const mappingTable = pseudoResult.mappingTable;
+
   // 1. Try Gemini AI Match Analysis First
   try {
-    const aiMatchPrompt = `다음 채용공고와 구직자 이력서를 엄격하게 비교 대조하여 이력서 적합도 분석 결과를 JSON으로 제공해줘.
+    const aiMatchPrompt = `다음 채용공고와 구직자의 가명화 처리된 이력서를 엄격하게 비교 대조하여 이력서 적합도 분석 결과를 JSON으로 제공해줘.
 
 중요 분석 지침:
+- 이력서 내 [회사A], [수치A], [시스템A] 등의 토큰은 보안상 가명화 처리된 구직자의 전/현직 경험이므로 의미를 유지하며 직무 역량을 평가해.
 - 구직자의 이력서 직무(예: HR, 인사)와 채용공고 직무(예: PM, 프로덕트 매니저, 개발자)의 직무 도메인이 상이하면 관대하게 점수를 주지 말고 20~45점 사이의 낮은 점수를 부여해.
 - 이력서 역량과 공고의 필수 요구사항이 얼마나 명확하게 부합하는지에 따라 0~100점 사이에서 정직하게 평가해줘.
 
@@ -472,13 +483,22 @@ JSON Format:
 회사: ${cleanCompany}, 직무: ${cleanPos}
 주요업무/요구사항: ${(job.tasks || []).join(', ')} / ${(job.requirements || []).join(', ')} / ${(job.keywords || []).join(', ')}
 
-[구직자 이력서 내용]
-제목: ${userResume.title || ''}, 경력: ${userResume.experienceYears || 1}년
-요약/스킬: ${userResume.summary || ''} / ${(userResume.skills || []).join(', ')}
-포트폴리오/첨부서류: ${userResume.portfolioSummary || ''} ${attachedFilesText}`;
+[구직자 이력서 내용 (클라이언트 가명화 처리 완료)]
+경력연차: ${userResume.experienceYears || 1}년, 보유스킬: ${(userResume.skills || []).join(', ')}
+가명화 본문:
+${pseudonymizedResumeText}`;
 
-    const aiMatchResult = await callGeminiAPI(aiMatchPrompt);
+    const rawAiResult = await callGeminiAPI(aiMatchPrompt);
+
+    // Step 2: Client-Side De-pseudonymization (AI 수신 결과 역매핑 복원)
+    const aiMatchResult = depseudonymizeObject(rawAiResult, mappingTable);
+
     if (aiMatchResult && typeof aiMatchResult.matchScore === 'number') {
+      console.group('%c🔄 [De-pseudonymization] 수신 결과 원문 복원 완료', 'color: #3B82F6; font-weight: bold;');
+      console.log('%c[Gemini AI 수신 결과]', 'color: #9CA3AF;', rawAiResult);
+      console.log('%c[역매핑 원문 복원 결과]', 'color: #10B981; font-weight: bold;', aiMatchResult);
+      console.groupEnd();
+
       return {
         success: true,
         data: {
@@ -490,7 +510,8 @@ JSON Format:
           missingKeywords: aiMatchResult.missingKeywords || [],
           resumeImprovementTips: aiMatchResult.resumeImprovementTips || ["지원 직무에 맞춰 경험 및 성과를 재구성하세요."],
           interviewPrepQuestions: aiMatchResult.interviewPrepQuestions || ["지원 직무에 관심 가지게 된 계기를 설명해주세요."],
-          isAiAnalyzed: true
+          isAiAnalyzed: true,
+          pseudonymizationLogs: pseudoResult.logs
         }
       };
     }

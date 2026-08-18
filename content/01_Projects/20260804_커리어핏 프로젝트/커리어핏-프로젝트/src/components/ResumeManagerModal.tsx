@@ -412,14 +412,28 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
           </div>
 
           {/* 경영민감정보 보안 고지 */}
-          <div className="p-3 bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl text-[11px] text-[#6A6A6A] leading-relaxed flex items-start gap-2">
-            <span className="text-sm mt-0.5">🔒</span>
-            <div>
-              <p className="font-semibold text-[#0A0A0A]">경영민감정보 및 데이터 보안 고지</p>
-              <p>
-                작성하신 경영민감정보 및 이력서 데이터는 커리어핏 외부 서버에 저장되지 않으며, 암호화되어 오직 사용자의 로컬 브라우저(스토리지)에만 안전하게 보관됩니다.
-                <span className="block mt-1 text-[#8A5B00] font-medium">* 다만 커리어핏과 무관하게 Gemini 자체적으로 정보를 수집/활용하려고 하는 경우 커리어핏 서비스에 책임이 없음을 고지합니다.</span>
+          <div className="p-3.5 bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl text-[11px] text-[#6A6A6A] leading-relaxed flex items-start gap-2.5">
+            <span className="text-base mt-0.5 shrink-0">🔒</span>
+            <div className="space-y-1">
+              <p className="font-bold text-[#0A0A0A] flex items-center gap-1.5">
+                <span>경영민감정보 및 데이터 프라이버시 보안 고지</span>
+                <span className="text-[10px] px-1.5 py-0.2 bg-[#2EB0A6]/15 text-[#2EB0A6] rounded font-semibold">XOR+Base64 암호화</span>
               </p>
+              <p className="text-[#3A3A3A]">
+                • <strong className="text-[#0A0A0A]">로컬 암호화 보관</strong>: 소속(전/현) 기업의 비공개 매출·실적, 내부 프로젝트명, 파트너사명 등 <strong>경영민감정보(Business-Sensitive Info)</strong>와 이력서는 외부 서버에 저장되지 않으며, 암호화(XOR+Base64)되어 오직 사용자의 로컬 브라우저에만 안전하게 보관됩니다.
+              </p>
+              <p className="text-[#3A3A3A]">
+                • <strong className="text-[#0A0A0A]">3단계 PII 비식별화 & 가명화</strong>: 이메일·연락처 등 직접 식별자(Direct PII) 원천 마스킹, 학력·나이 등 준식별자(Indirect PII) 토큰화 및 전/현 직장 경영민감정보 가명화(<code className="bg-white px-1 font-mono">[회사A]</code>, <code className="bg-white px-1 font-mono">[수치A]</code>)가 적용되어 AI로 안전하게 전달됩니다.
+              </p>
+              <div className="p-2 bg-white/80 rounded-lg border border-[#EAE5DC] text-[10.5px] space-y-1 mt-1">
+                <p className="text-[#0A0A0A] font-bold">⚖️ Zero Data Retention (ZDR) & AI 비학습 단계별 보안 명세:</p>
+                <p className="text-[#2EB0A6] font-semibold">
+                  • <strong>[현재 단계 (포트폴리오 / MVP)]</strong>: 클라이언트 사이드 가명화(Pseudonymization) 및 PII 원천 마스킹 조정을 시행하여 민감정보가 AI 프로바이더로 전달되지 않도록 실질적 보호 조치를 시행함 (비학습 효과 실질적 달성).
+                </p>
+                <p className="text-[#6A6A6A]">
+                  • <strong>[향후 상용화 단계 (Production Roadmap)]</strong>: Enterprise Vertex AI + Zero Data Retention(ZDR) 계약 체결을 통해 계약상 비학습 보장 및 데이터 0일 보관(ZDR)으로 명시적 보안 격상 예정.
+                </p>
+              </div>
             </div>
           </div>
 

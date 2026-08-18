@@ -1,11 +1,13 @@
 // Client-side Data Encryption Utility for LocalStorage Security
-// Prevents sensitive resume content from being viewed in raw plaintext in browser storage
+// Encrypts sensitive resume content & Business-Sensitive Info (revenue, internal projects, clients)
+// Prevents raw plaintext exposure in browser storage via XOR + Base64 Encryption
 
 const ENCRYPTION_PREFIX = 'ENC_V1_';
 const SECRET_SALT = 'CareerFit_Secure_Resume_2026';
 
 /**
- * Lightweight local encryption for JSON string data in LocalStorage
+ * Lightweight local encryption (XOR + Base64) for JSON string data in LocalStorage.
+ * Protects both PII and Business-Sensitive Info (전/현 소속 기업 매출, 내부 프로젝트명, 고객사/파트너사명 등)
  */
 export function encryptLocalData(data: any): string {
   try {

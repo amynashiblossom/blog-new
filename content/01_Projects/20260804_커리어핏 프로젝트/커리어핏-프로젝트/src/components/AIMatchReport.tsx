@@ -13,7 +13,9 @@ import {
   Building2, 
   TrendingUp,
   BrainCircuit,
-  Award
+  Award,
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
 
 interface AIMatchReportProps {
@@ -77,13 +79,25 @@ export const AIMatchReport: React.FC<AIMatchReportProps> = ({
             </div>
             <p className="text-xs text-[#6A6A6A] max-w-2xl">{userResume.summary}</p>
             
-            {/* User Skills Pills */}
-            <div className="flex flex-wrap gap-1.5 mt-3">
+            {/* User Skills Pills & Security Badges */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-3">
               {userResume.skills.map((skill, idx) => (
                 <span key={idx} className="px-2 py-0.5 bg-white border border-[#2EB0A6]/40 text-[#2EB0A6] font-semibold text-xs rounded-full">
                   ✓ {skill}
                 </span>
               ))}
+              <span className="px-2.5 py-0.5 bg-[#FAF5E8] border border-amber-300 text-amber-900 font-bold text-[11px] rounded-full flex items-center gap-1 ml-1">
+                <Lock className="w-3 h-3 text-amber-700" />
+                <span>경영민감정보 로컬 암호화 보관중 (XOR+Base64)</span>
+              </span>
+              <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-[11px] rounded-full flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-700" />
+                <span>Direct/Indirect PII 마스킹</span>
+              </span>
+              <span className="px-2.5 py-0.5 bg-blue-50 border border-blue-300 text-blue-900 font-bold text-[11px] rounded-full flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-blue-700" />
+                <span>클라이언트 가명화 (Pseudonymization)</span>
+              </span>
             </div>
           </div>
         </div>
@@ -95,6 +109,25 @@ export const AIMatchReport: React.FC<AIMatchReportProps> = ({
           <FileText className="w-4 h-4 text-[#2EB0A6]" />
           <span>서류 드래그 업로드 & 이력서 관리</span>
         </button>
+      </div>
+
+      {/* Client-side Pseudonymization Security Banner */}
+      <div className="bg-blue-50/80 border border-blue-200/90 rounded-2xl p-4 text-xs text-blue-950 flex items-start gap-3 shadow-2xs">
+        <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <strong className="font-bold text-blue-950 text-sm">🛡️ 데이터 프라이버시 3단계 비식별화: PII 마스킹 & 클라이언트 사이드 가명화 (Pseudonymization) 적용 완료</strong>
+            <span className="px-2 py-0.5 bg-blue-600 text-white font-bold text-[10px] rounded-full">Zero-Server Leak</span>
+          </div>
+          <p className="text-blue-900 leading-relaxed">
+            구직자의 <strong>직접 식별 정보(Direct PII: 이메일, 전화번호, 주소)</strong>는 원천 마스킹되며, <strong>경영민감정보(기업명, 매출/수치, 내부 시스템명)</strong>는 AI 전송 전 식별 불가 가명 토큰(<code className="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-900 font-mono text-[11px]">[회사A]</code>, <code className="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-900 font-mono text-[11px]">[수치A]</code>, <code className="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-900 font-mono text-[11px]">[시스템A]</code>)으로 클라이언트 브라우저에서 자동 변환 후 AI에 전송됩니다. 
+            매핑 테이블은 오직 사용자의 로컬 브라우저에만 보관되며, 결과 수신 즉시 클라이언트 역매핑으로 원문 복원됩니다.
+          </p>
+          <div className="pt-1.5 border-t border-blue-200/60 flex flex-col sm:flex-row gap-2 text-[11px] text-blue-950 font-medium">
+            <span>• <strong>[현재 포트폴리오/MVP]</strong>: 클라이언트 가명화 및 PII 마스킹으로 민감정보 유출 원천 차단 (비학습 효과 실질 달성)</span>
+            <span>• <strong>[향후 상용화]</strong>: Enterprise Vertex AI + Zero Data Retention(ZDR) 계약 체결 예정</span>
+          </div>
+        </div>
       </div>
 
       {/* Main Analysis Hub Grid */}

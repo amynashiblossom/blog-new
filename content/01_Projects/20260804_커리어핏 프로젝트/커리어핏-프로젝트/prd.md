@@ -20,6 +20,12 @@
 | **v7.5** | **2026-08-11** | **[경영민감정보 로컬 암호화 보관 및 Gemini 자체 수집 책임한계 고지 반영] 경영민감정보 및 이력서 데이터의 로컬 암호화 저장 고지 및 Gemini 자체 수집/활용 시 서비스 책임한계(Disclaimer) 고지 문구 반영.** |
 | **v7.6** | **2026-08-11** | **[Vercel CLI 프로덕션 배포 파이프라인 및 로컬 데이터 암호화 워크플로우 명세 보완] Vercel 자동 배포 연동 및 브라우저 로컬 암호화(XOR+Base64) 보관 프로세스와 보안 데이터 흐름 시각화 명세 수록.** |
 | **v7.7** | **2026-08-13** | **[배포 후 UX 개선 / 안심 고지 설계 및 PM 디테일 어필 반영] 서버 DB가 없는 로컬 스토리지 환경 특성상, 사용자 이탈/혼선을 방지하기 위한 공식 재방문 주소 고지 안내 UX(`careerfit-app-ten.vercel.app`) 설계 및 PM 어필 명세 수록.** |
+| **v8.0** | **2026-08-17** | **[데이터 프라이버시 & 마스킹 정책 규격 정립] 고유 식별 정보(Direct PII) 및 준식별 정보(Indirect PII) 비식별화/토큰화 분류 체계 수립, Client/Edge Regex Parsing, LLM Zero Data Retention (ZDR) API 1회성 분석 및 세션 종료 후 메모리 즉시 파기 파이프라인 명세 반영.** |
+| **v8.1** | **2026-08-18** | **[경영민감정보(Business-Sensitive Info) 보호 정의 반영] 전/현 소속 기업의 비공개 실적, 프로젝트명, 파트너사명 등 기밀유지 리스크가 있는 경영민감정보를 로컬 암호화 저장 대상 명세로 구체화.** |
+| **v8.2** | **2026-08-18** | **[경영민감정보 클라이언트 사이드 가명화(Pseudonymization) 명세 수록] 기업명, 매출/수치, 내부 시스템명 등 경영민감정보의 식별 불가 가명화 처리, 로컬 전용 매핑/역매핑 흐름 및 포트폴리오(Gemini 무료 API + 클라이언트 가명화) vs 상용화(Vertex AI + ZDR 계약) 단계별 로드맵 반영.** |
+| **v8.3** | **2026-08-18** | **[클라이언트 가명화(Pseudonymization) 코드 구현 & 콘솔 디버그 파이프라인 / Zero-Server Leak UI 반영] `src/utils/pseudonymization.ts` 가명화/역매핑 엔진 구축, `localAnalyzeMatch` AI 파이프라인 연동, `%c🛡️ [CareerFit Pseudonymization]` 콘솔 디버그 시각화 로그 파이프라인 및 `AIMatchReport.tsx` 보안 뱃지/안심 카드 UI 반영 완료.** |
+| **v8.4** | **2026-08-18** | **[Privacy 규정 보완 & ZDR 법적 고지 문구 단계별 분리] Privacy 규격서 섹션 번호 구조 정정(1~6장 체계 정립) 및 ZDR 문구를 [현재 단계(포트폴리오/MVP)] vs [미래 단계(상용화 Production)]로 명확히 단계를 분리하여 수록.** |
+
 
 
 
@@ -38,7 +44,9 @@
   3. **범용 AI(Claude, ChatGPT 등) 직접 입력 대비 압도적 보안 및 UX 차별화 (Why 재정립)**:
      - **범용 AI 웹 서비스 직접 입력의 문제점**: 구직자가 Claude, ChatGPT 등의 웹 챗봇에 이력서를 직접 업로드/복사하면, 연락처·이메일 등 민감 개인정보(PII)가 텍스트 그대로 전송되고 모델 학습 데이터로 활용될 보안 위험이 있으며, 공고 대조 결과를 타임라인 캘린더나 매칭 대시보드로 체계화할 수 없습니다.
      - **커리어핏만의 보안 차별성 및 책임 한계 고지**:
-       - 🛡️ **PII 자동 마스킹**: Supabase Edge Function 프록시가 이메일, 전화번호 등 민감한 개인정보를 마스킹(`[이메일]`, `[연락처]`) 처리 후 AI 모델로 전송합니다.
+        - 🛡️ **PII 자동 마스킹 & 클라이언트 사이드 가명화(Pseudonymization)**: 이메일, 전화번호 등 직접 개인정보(PII) 마스킹(`[이메일]`, `[연락처]`)과 함께, 기업명·매출/수치·내부 시스템명 등 경영민감정보를 의미는 유지하되 식별 불가한 가명 토큰(`[회사A]`, `[수치A]`, `[시스템A]`)으로 클라이언트 사이드에서 자동 변환 후 AI에 전송합니다. 역매핑 테이블은 오직 로컬 브라우저에만 보관되어 서버로 전송되지 않으며, 결과 수신 후 클라이언트에서 원문으로 복원합니다.
+        - ⚖️ **PRIVACY 데이터 보호 규정 명시**:
+          > *"[현재 단계 (포트폴리오/MVP)] 커리어핏은 현재 클라이언트 사이드 가명화(Pseudonymization) 및 PII 원천 마스킹을 통해 민감정보가 AI 프로바이더에 전달되지 않도록 실질적 보호 조치를 시행하고 있습니다 (비학습 효과 실질적 달성). [향후 상용화 단계 (Production Roadmap)] 상용화 전환 시 Enterprise Vertex AI + Zero Data Retention(ZDR) 계약을 통해 계약상 비학습 보장 및 데이터 0일 보관(ZDR)으로 명시적 보안 격상할 예정입니다."*
        - 🔒 **외부 AI 학습 차단 1회성 API 연동 기반 실시간 갭(Gap) 진단**: 챗봇 서비스와 달리 1회성 API 호출 파이프라인으로 모델 재학습 데이터 활용을 차단합니다. *(※ 입력 데이터는 구글 모델 학습에 활용되지 않도록 파이프라인 처리(학습 미반영)하나, Gemini 등 외부 LLM 프로바이더 단에서 자체적으로 반영하게 된 부분에 대해서는 본 서비스에서 책임을 지지 않습니다.)*
        - 🔑 **로컬 암호화 보관소**: 이력서 원문은 사용자 브라우저(`localStorage`)에만 XOR + Base64로 암호화되어 보관됩니다.
   4. **파편화된 채용 전형의 단일 타임라인 통합 관리**:
@@ -96,24 +104,28 @@
   - 3) `About [회사명]`, `주식회사 [회사명]`, `근무처 [회사명]` 소개문 브랜드 추적.
   - 4) `PM`, `Product Manager`, `Frontend`, `Developer`, `Engineer`, `Analyst`, `Marketer`, `기획자`, `매니저`, `담당자`, `리드`, `스페셜리스트` 등 직무 키워드 스캐닝을 통한 포지션 타겟팅.
 - **채용 중개 플랫폼 도메인 엄격 제외 보안 규칙 (v7.2)**:
-  - `linkedin.com`, `wanted.co.kr`, `jobkorea.co.kr`, `saramin.co.kr`, `remember.co.kr`, `blind.com`, `incruit.com`, `glassdoor.com` 등 공고 중개 포털 도메인은 **기업명 추론 대상에서 엄격히 제외**하여, 중개 사이트 이름이 채용 기업명으로 잘못 설정되는 오류를 원천 차단.
-  - 기업 자체 직속 브랜드 채용 도메인(예: `careers.kakao.com`, `toss.im`)일 경우에만 브랜드명 추론 참고용으로 동작.
-- **원문 상단 텍스트 보존 및 무의미 대체어 방지 (v7.1)**:
-  - 공고 파싱 시 `sanitizeTitleOrCompany` 및 `pureLocalScrapeEngine`에서 과도한 노이즈 삭제로 인해 유효 문자열이 소실되어 `"채용 기업"`, `"해당 직무"` 등의 딱딱한 대체 문구로 덮어씌워지던 현상을 제거.
-  - 불확실하거나 복합적인 텍스트라도 공고 원문의 상단 첫 줄 문장을 제목/회사명/직무명으로 최대한 보존하여 유연하고 자연스럽게 파싱 결과를 산출.
-  - 마감일 파싱 시 상시/채용시 마감 문구가 있는 경우 `"데드라인 미정 (상시/채용시 마감)"` 문구를 명확하게 유지하도록 파싱 로직 보장.
-- **더미 키워드 전면 개편**: `[채용공고, 직무역량, 실무경험]` 등의 단순 대체어 대신 공고 원문에서 실제로 사용된 주요 직무/기술 단어를 동적 추출하여 가이드 추천 문구의 정교함 극대화.
-- **직무 도메인 분류기 (`detectJobDomain`) 및 불일치 감점 페널티**:
-  - HR, PM, DEV, 마케팅, 디자인 등 직무 카테고리를 분류.
-  - 이력서 직무와 공고 직무의 도메인이 상이한 경우(예: HR ↔ PM/개발) 30점 상당의 감점 페널티를 적용하고 최소 점수 제한(60점 하한선)을 제거하여 20~30점대의 정직한 매칭 리포트 산출.
-  - Gemini AI 호출 시에도 직무 도메인 상이 시 엄격 감점 평가 지시문 반영.
-
-### 2.9. 배포 후 UX 개선 & 안심 고지 설계 (재방문 주소 및 브라우저 귀속 안내 UX) (v7.7)
-- **설계 배경 & PM 의도**:
-  - 서버 DB가 없는 Pure LocalStorage 특성상, 사용자가 로컬 개발 주소(`localhost:3000`)나 타 기기/시크릿 모드로 접속 시 기존 작성 데이터가 보이지 않아 '데이터가 삭제되었다'고 당황하거나 서비스 이탈로 오해할 가능성이 존재함.
-  - 이에 사용자가 '내 서류가 어디 갔지?' 하고 당황하지 않도록 **공식 배포 주소(`https://careerfit-app-ten.vercel.app/`) 재방문 가이드** 및 **브라우저 귀속 안내 UX 고지**를 메인 대시보드 및 이력서 관리 모달 상단에 직관적인 💡 안내 팁 카드로 배치하여 사용자 혼선을 사전에 완벽 차단함.
-- **PM 관점 UX 디테일 어필 포인트 (포트폴리오 / 면접 고지)**:
-  > *"서버 DB가 없는 로컬 스토리지 특성상, 사용자가 '내 서류가 어디 갔지?' 하고 당황하거나 탈퇴/이탈로 오해하지 않도록 재방문 주소 안내(`careerfit-app-ten.vercel.app`) 및 브라우저 귀속 안내 UX 고지를 배치하여 사용자 혼선을 사전 차단함."*
+  - `linkedin.com`, `wanted.co.kr`, `jobkorea.co.kr`, `saramin.co.kr`, `remember.co.kr`, `blind.com`, `incruit.com`, `glassdoor.com` 등 공고 중개 포털 도메인은 **기업명 추론 대상에서 엄격1. **[prd.md](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/prd.md) [MODIFY]**
+   - v6.0~v8.3 개정 반영: 플랫폼 약관 충돌 회피 전략, 텍스트 복사 중심 메인 UX, B2C 개인 생산성 도구 정체성, Claude/ChatGPT 대비 PII 마스킹·Zero-Training 명정립, 로컬 데이터 암호화, Vercel 배포 명세, **배포 후 UX 개선 / 재방문 안심 고지 설계(`careerfit-app-ten.vercel.app`)** 및 **경영민감정보 클라이언트 사이드 가명화(Pseudonymization) 파이프라인 / 콘솔 디버그 로그 / Zero-Server Leak UI** 완벽 수록.
+2. **[src/components/JobScraperModal.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/JobScraperModal.tsx)**
+   - 공고 텍스트 직접 복사·붙여넣기(Paste) 탭을 메인 UX로 제공하며, Gemini 2.5 AI가 주요 업무/자격요건/우대사항 정규화 파싱.
+3. **[supabase/functions/gemini-proxy/index.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/supabase/functions/gemini-proxy/index.ts)**
+   - Supabase Edge Function Deno 서버 코드. `GEMINI_API_KEY` Secrets 활용, PII 자동 마스킹 및 Gemini REST API 보안 중계.
+4. **[src/utils/pseudonymization.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/pseudonymization.ts) [NEW]**
+   - 클라이언트 사이드 경영민감정보(기업명, 매출/수치, 내부 시스템명) 식별 불가 토큰(`[회사A]`, `[수치A]`, `[시스템A]`) 가명화(`pseudonymizeText`), 로컬 매핑 테이블 생성, 수신 결과 1:1 역매핑 복원(`depseudonymizeObject`) 전용 엔진 유틸리티 및 `%c🛡️ [CareerFit Pseudonymization]` 콘솔 디버그 시각화 로그 파이프라인.
+5. **[src/utils/gemini.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/gemini.ts) [MODIFY]**
+   - Supabase Edge Function 엔드포인트 호출, 무중단 로컬 Fallback 파싱/분석 유틸리티. `localAnalyzeMatch` 내 가명화 전송 및 로컬 역매핑 복원, 디버그 콘솔 로그 파이프라인 적용.
+6. **[src/components/AIMatchReport.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/AIMatchReport.tsx) [MODIFY]**
+   - AI 매칭 리포트 컴포넌트. 상단 프로필 헤더 `🛡️ 클라이언트 가명화 (Pseudonymization)` 뱃지 및 경영민감정보 원천 차단 안내 카드(Zero-Server Leak) UI 반영.
+7. **[src/utils/crypto.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/crypto.ts)**
+   - 이력서 및 경력기술서 `localStorage` 저장 시 XOR + Base64 암호화/복호화 (`ENC_V1_...`) 담당.
+8. **[src/components/TimelineView.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/TimelineView.tsx)**
+   - 멀티 플랫폼 공고의 마감일과 커스텀 전형 일정을 단일 월간 타임라인 캘린더 상에 테마 칩으로 동시 표시.
+9. **[src/components/KanbanBoard.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/KanbanBoard.tsx)**
+   - 칸반보드 5개 상태 컬럼 관리, 관심공고 비대칭 넓이 확장 및 공고 스크랩 CTA 헤더 통합 UI 제공.
+10. **[vercel.json](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/vercel.json) [NEW]**
+    - Vercel 프로덕션 SPA 라우팅 및 빌드 출력 디렉토리(`dist`) 매핑 설정 파일.
+11. **[scratch/test-pseudonymization.cjs](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/scratch/test-pseudonymization.cjs) [NEW]**
+    - 가명화/역매핑 유틸리티의 동작성(원문 ↔ 가명화 ↔ 역매핑 원문 1:1 복원 검증)을 독립 환경에서 검증하는 Node.js 테스트 스크립트.�상, 사용자가 '내 서류가 어디 갔지?' 하고 당황하거나 탈퇴/이탈로 오해하지 않도록 재방문 주소 안내(`careerfit-app-ten.vercel.app`) 및 브라우저 귀속 안내 UX 고지를 배치하여 사용자 혼선을 사전 차단함."*
 - **화면 적용 안내 문구 규격 명세**:
   ```text
   💡 저장된 내 서류/공고 확인 안내
@@ -124,6 +136,67 @@
 
   (※ 다른 브라우저나 기기, 시크릿 모드로 접속 시에는 로컬 저장소가 달라져 보이지 않을 수 있습니다.)
   ```
+
+### 2.10. 데이터 프라이버시 & 마스킹 정책 규격 (CareerFit Data Privacy & Masking Policy Specification) (v8.0)
+> 📄 독립된 세부 규격서: [PRIVACY_MASKING_POLICY.md](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/PRIVACY_MASKING_POLICY.md)
+
+- **배경 및 목적**:
+  - **배경**: 사용자의 민감한 커리어/이력 데이터가 외부 LLM에 전송될 때 발생하는 개인정보 유출 리스크 및 프라이버시 침해 불안 해소.
+  - **목적**: 직무 적합도(Fit) 분석에 불필요한 고유 식별 정보를 1차 필터링하고, LLM 비학습(Zero Data Retention, ZDR) API를 통해 데이터 주권을 보장함.
+- **개인정보의 정의 및 비식별화 분류 체계**:
+  공고 매칭과 역량 분석에 필요한 '직무 데이터(Job Data)'와 매칭에 불필요한 '식별 데이터(PII)'를 엄격히 분리하여 정의함.
+
+  > ※ 참고: 이력서·경력기술서 내 소속 기업의 매출·실적 등 경영민감정보는 개인정보보호법상 PII에 해당하지 않으나, 유출 시 사용자의 전/현 소속 기업에 미치는 리스크를 별도로 고려하여 로컬 암호화 저장 대상에 포함함.
+
+  | 데이터 분류 | 포함 항목 (Data Fields) | 비식별화/처리 정책 (Action) | 비즈니스/기술적 근거 |
+  |:---|:---|:---|:---|
+  | **고유 식별 정보 (Direct PII)** | 이름, 전화번호, 이메일, 주소, 주민등록번호, 링크드인 URL 등 | **원천 마스킹/삭제 (Drop or Regex Masking)**<br>• 홍길동 → `[USER_NAME]`<br>• 010-XXXX-XXXX → `[PHONE]`<br>• test@email.com → `[EMAIL]` | 역량 적합도 분석에 일절 불필요하며, 유출 시 치명적인 직접 식별자. |
+  | **준식별 정보 (Indirect PII)** | 학력(출신교), 성별, 나이, 생년월일, 사진, 가족관계 | **사전 필터링/토큰 치환 (Drop/Generalize)**<br>• XX대학교 → `[UNIVERSITY]`<br>• 30세 → `[AGE_REMOVED]` | 편향(Bias) 없는 순수 역량 기반 매칭 및 블라인드 채용 기준 준수. |
+  | **경영민감정보 (Business-Sensitive Info)** | 소속(전/현) 기업의 비공개 매출·실적 수치, 내부 프로젝트명, 미공개 사업 성과, 고객사/파트너사명 등 | **클라이언트 사이드 가명화 (Pseudonymization)**<br>• 기업명 → `[회사A]`, `[회사B]`<br>• 매출/수치 → `[수치A]`, `[수치B]`<br>• 내부 시스템명 → `[시스템A]`<br>• 매핑 테이블은 로컬에만 보관(서버 미전송) 후 수신 결과 클라이언트 역매핑 복원 | 개인정보보호법상 PII는 아니나, 유출 시 전/현 소속 기업에 대한 기밀유지 의무 위반 리스크가 있는 정보. 원문 의미는 유지하면서 AI에 식별 불가 형태로 전송. |
+  | **직무/역량 분석 데이터 (Allowed Data)** | 담당 업무, 보유 기술(Tech Stack), 프로젝트 경험, 성과 지표, 사용 툴 | **전송 유지 (Extract & Pass)** | 공고의 자격 요건/우대 사항과 1:1 매칭 갭(Gap)을 산출하기 위한 필수 데이터. |
+
+- **데이터 처리 파이프라인 & 가명화 처리 흐름 (Data Flow Lifecycle)**:
+  ```text
+  이력서 원문
+      ↓
+  [클라이언트 사이드] 가명화 처리
+      - 기업명 → [회사A], [회사B]
+      - 매출/수치 → [수치A], [수치B]
+      - 내부 시스템명 → [시스템A]
+      ↓
+  가명화된 텍스트만 AI(Gemini)에 전송
+      ↓
+  갭 분석 결과 수신
+      ↓
+  [클라이언트 사이드] 역매핑으로 원문 복원하여 화면 표시
+      ↓
+  매핑 테이블은 로컬에만 보관 (서버 미전송)
+  ```
+
+  - **Step 1. 클라이언트 사이드 가명화 (Pseudonymization)**:
+    - 사용자가 이력서를 업로드하거나 텍스트를 붙여넣으면 클라이언트 단(`src/utils/pseudonymization.ts`)에서 정규표현식(Regex) 및 패턴 파서로 고유 식별 정보(PII) 마스킹과 함께 경영민감정보를 식별 불가 가명 토큰으로 치환합니다.
+    - **가명화 치환 규칙**:
+      - 기업명 → `[회사A]`, `[회사B]` ...
+      - 매출/수치 → `[수치A]`, `[수치B]` ...
+      - 내부 시스템/프로젝트명 → `[시스템A]`, `[시스템B]` ...
+    - **가명화 예시**:
+      - **[원문]**: `"A기업 ERP 고도화 프로젝트에서 연간 매출 120억 달성에 기여"`
+      - **[가명화 후 AI 전송]**: `"[회사A] [시스템B] 고도화 프로젝트에서 연간 매출 [수치C] 달성에 기여"`
+      - **[매핑 테이블 - 로컬에만 보관]**:
+        ```text
+        회사A → A기업
+        시스템B → ERP
+        수치C → 120억
+        ```
+  - **Step 2. 1회성 AI 전송 & 갭 분석 수신**:
+    - 가명화 처리된 텍스트만 AI(Gemini API)에 전송하여 갭 분석 결과를 수신합니다.
+    - 현재(포트폴리오/MVP)는 Gemini 무료 API + 클라이언트 가명화로 비용 0원 및 비학습 실질 달성하며, 상용화 시 Vertex AI + ZDR 계약으로 격상 예정.
+  - **Step 3. 클라이언트 사이드 역매핑 (De-pseudonymization) & 원문 복원**:
+    - AI로부터 전달받은 갭 분석 리포트 수신 즉시 로컬에 보관된 매핑 테이블을 참조하여 클라이언트 화면에 원문으로 역매핑하여 표시합니다.
+  - **Step 4. 세션 종료 및 메모리 파기**:
+    - 분석을 위해 Supabase Edge Function을 경유한 임시 처리 텍스트(가명화된 텍스트 포함)는 갭 분석 결과 렌더링 완료 즉시 서버/세션 메모리에서 파기됩니다.
+    - 매핑 테이블은 사용자 로컬 암호화 보관소(`localStorage`)에만 유지되고 서버/세션 메모리에는 일절 남지 않습니다.
+    - ※ 사용자가 직접 등록한 이력서 원본은 브라우저 `localStorage`에 XOR+Base64 암호화 상태로 별도 보관되어 추후 공고 재활용 시 재사용됩니다. *(서버 전송 없음, 로컬 암호화 보관 지속)*
 
 
 ---
@@ -146,26 +219,29 @@ graph TD
     ScraperModal -->|2. localScrapeJD 호출| GeminiUtil[src/utils/gemini.ts]
     
     subgraph Security & Privacy Proxy Layer
-        GeminiUtil -->|3. POST prompt & text| SupabaseProxy[Supabase Edge Function: gemini-proxy]
-        SupabaseProxy -->|4. PII 마스킹 & Secrets Key 사용| GeminiAPI[Google Gemini 2.5 API]
+        GeminiUtil -->|3-A. 클라이언트 가명화| Pseudonymization[pseudonymization.ts<br/>기업명→[회사A] / 수치→[수치A]]
+        Pseudonymization -->|3-B. 가명화 텍스트만 전송| SupabaseProxy[Supabase Edge Function: gemini-proxy]
+        Pseudonymization -->|매핑 테이블 보관| LocalStorage[(Browser LocalStorage)]
+        SupabaseProxy -->|4. Secrets Key 사용| GeminiAPI[Google Gemini 2.5 API]
         GeminiAPI -->|5-A. 파싱/매칭 JSON 응답| SupabaseProxy
-        SupabaseProxy -->|6. JSON 결과 전달| GeminiUtil
+        SupabaseProxy -->|결과 수신| GeminiUtil
+        GeminiUtil -->|역매핑 복원| Pseudonymization
         
         GeminiAPI -.->|5-B. 통신 장애/Quota 초과 시| LocalFallback[Pure Local Engine]
         LocalFallback -->|Fallback JSON| GeminiUtil
     end
 
-    GeminiUtil -->|7. 구조화 데이터 저장| AppState[App.tsx State]
+    GeminiUtil -->|6. 구조화 데이터 저장| AppState[App.tsx State]
     
-    User -->|8. 이력서 등록/수정 (Claude/ChatGPT 대비 PII 마스킹 & AI 학습 0%)| ResumeModal[ResumeManagerModal.tsx]
-    ResumeModal -->|9. encryptLocalData| Crypto[src/utils/crypto.ts]
-    Crypto -->|10. ENC_V1_ Encrypted Local Storage| LocalStorage[(Browser LocalStorage)]
+    User -->|7. 이력서 등록/수정 (Claude/ChatGPT 대비 PII 마스킹 & AI 학습 0%)| ResumeModal[ResumeManagerModal.tsx]
+    ResumeModal -->|8. encryptLocalData| Crypto[src/utils/crypto.ts]
+    Crypto -->|9. ENC_V1_ Encrypted Local Storage| LocalStorage
 
-    User -->|11. 멀티 플랫폼 공고 커스텀 일정 통합| DetailModal[JobDetailModal.tsx]
-    DetailModal & LocalStorage -->|12. 통합 월간 일정 트래킹| TimelineView[TimelineView.tsx]
+    User -->|10. 멀티 플랫폼 공고 커스텀 일정 통합| DetailModal[JobDetailModal.tsx]
+    DetailModal & LocalStorage -->|11. 통합 월간 일정 트래킹| TimelineView[TimelineView.tsx]
 
-    AppState & LocalStorage -->|13. localAnalyzeMatch| MatchReport[AIMatchReport.tsx]
-    MatchReport -->|14. 2-Column AI 매칭 리포트 출력| User
+    AppState & LocalStorage -->|12. localAnalyzeMatch| MatchReport[AIMatchReport.tsx]
+    MatchReport -->|13. 2-Column AI 매칭 리포트 출력| User
 ```
 
 ---
@@ -178,15 +254,19 @@ graph TD
    - 공고 텍스트 직접 복사·붙여넣기(Paste) 탭을 메인 UX로 제공하며, Gemini 2.5 AI가 주요 업무/자격요건/우대사항 정규화 파싱.
 3. **[supabase/functions/gemini-proxy/index.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/supabase/functions/gemini-proxy/index.ts)**
    - Supabase Edge Function Deno 서버 코드. `GEMINI_API_KEY` Secrets 활용, PII 자동 마스킹 및 Gemini REST API 보안 중계.
-4. **[src/utils/gemini.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/gemini.ts)**
-   - Supabase Edge Function 엔드포인트 호출 및 무중단 로컬 Fallback 파싱/분석 유틸리티.
-5. **[src/utils/crypto.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/crypto.ts)**
+4. **[src/utils/pseudonymization.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/pseudonymization.ts) [NEW]**
+   - 클라이언트 사이드 경영민감정보(기업명, 매출/수치, 내부 시스템명) 식별 불가 토큰(`[회사A]`, `[수치A]`, `[시스템A]`) 가명화(`pseudonymizeText`), 로컬 매핑 테이블 생성 및 수신 결과 1:1 역매핑 복원(`depseudonymizeObject`) 전용 유틸리티.
+5. **[src/utils/gemini.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/gemini.ts) [MODIFY]**
+   - Supabase Edge Function 엔드포인트 호출, 무중단 로컬 Fallback 파싱/분석 유틸리티. `localAnalyzeMatch` 내 가명화 전송 및 로컬 역매핑 복원, 디버그 콘솔 로그 파이프라인 적용.
+6. **[src/components/AIMatchReport.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/AIMatchReport.tsx) [MODIFY]**
+   - AI 매칭 리포트 컴포넌트. 상단 프로필 헤더 `🛡️ 클라이언트 가명화 (Pseudonymization)` 뱃지 및 경영민감정보 원천 차단 안내 카드(Zero-Server Leak) UI 반영.
+7. **[src/utils/crypto.ts](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/utils/crypto.ts)**
    - 이력서 및 경력기술서 `localStorage` 저장 시 XOR + Base64 암호화/복호화 (`ENC_V1_...`) 담당.
-6. **[src/components/TimelineView.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/TimelineView.tsx)**
+8. **[src/components/TimelineView.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/TimelineView.tsx)**
    - 멀티 플랫폼 공고의 마감일과 커스텀 전형 일정을 단일 월간 타임라인 캘린더 상에 테마 칩으로 동시 표시.
-7. **[src/components/KanbanBoard.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/KanbanBoard.tsx)**
+9. **[src/components/KanbanBoard.tsx](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/src/components/KanbanBoard.tsx)**
    - 칸반보드 5개 상태 컬럼 관리, 관심공고 비대칭 넓이 확장 및 공고 스크랩 CTA 헤더 통합 UI 제공.
-8. **[vercel.json](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/vercel.json) [NEW]**
+10. **[vercel.json](file:///c:/Users/amy%20hyewon%20lee/blog-new/content/01_Projects/20260804_커리어핏%20프로젝트/커리어핏-프로젝트/vercel.json) [NEW]**
    - Vercel 프로덕션 SPA 라우팅 및 빌드 출력 디렉토리(`dist`) 매핑 설정 파일.
 
 
