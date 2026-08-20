@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UserResume, ResumeFile } from '../types';
-import { X, Save, Plus, Trash2, FileText, UploadCloud, FileCheck, CheckCircle2, FileCode, AlertCircle, FileSpreadsheet, Eye, ExternalLink } from 'lucide-react';
+import { X, Save, Plus, Trash2, FileText, UploadCloud, FileCheck, CheckCircle2, FileCode, AlertCircle, FileSpreadsheet, Eye, ExternalLink, AlertTriangle, FileWarning } from 'lucide-react';
+import { validateResumeFile } from '../utils/resumeValidator';
 
 interface ResumeManagerModalProps {
   isOpen: boolean;
@@ -31,6 +32,17 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
   const [previewText, setPreviewText] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 이력서가 아닌 파일 경고 모달 상태
+  const [invalidFileModal, setInvalidFileModal] = useState<{
+    isOpen: boolean;
+    fileName: string;
+    reason: string;
+  }>({
+    isOpen: false,
+    fileName: '',
+    reason: ''
+  });
+
   const handleAddSkill = () => {
     if (!newSkillInput.trim()) return;
     if (!skills.includes(newSkillInput.trim())) {
@@ -51,14 +63,25 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
   };
 
   // Handle files processing
-  const handleProcessFiles = (filesList: FileList | File[]) => {
+  const handleProcessFiles = async (filesList: FileList | File[]) => {
     const filesArray = Array.from(filesList);
     if (filesArray.length === 0) return;
 
     let addedCount = 0;
     const newResumeFiles: ResumeFile[] = [];
 
-    filesArray.forEach((file) => {
+    for (const file of filesArray) {
+      // 이력서 파일 검증 (소스코드, 실행파일, 무관한 텍스트 등 방지)
+      const validation = await validateResumeFile(file);
+      if (!validation.isValid) {
+        setInvalidFileModal({
+          isOpen: true,
+          fileName: file.name,
+          reason: validation.reason || '이력서 파일이 아닙니다.'
+        });
+        continue;
+      }
+
       const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
       const fileExt = file.name.split('.').pop()?.toUpperCase() || 'FILE';
       
@@ -90,11 +113,13 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
 
       newResumeFiles.push(newFileObj);
       addedCount++;
-    });
+    }
 
-    setAttachedFiles((prev) => [...prev, ...newResumeFiles]);
-    setUploadMessage(`${addedCount}개 서류가 정상적으로 첨부 및 저장되었습니다.`);
-    setTimeout(() => setUploadMessage(null), 4000);
+    if (newResumeFiles.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...newResumeFiles]);
+      setUploadMessage(`${addedCount}개 서류가 정상적으로 첨부 및 저장되었습니다.`);
+      setTimeout(() => setUploadMessage(null), 4000);
+    }
   };
 
   // Drag & Drop Handlers
@@ -459,6 +484,82 @@ export const ResumeManagerModal: React.FC<ResumeManagerModalProps> = ({
         </div>
 
       </div>
+
+      {/* 이력서가 아닌 파일 감지 시 경고 팝업 모달 */}
+      {invalidFileModal.isOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-[#FFFDF7] w-full max-w-md rounded-2xl border-2 border-red-200 shadow-2xl overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-150 relative">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 shadow-xs">
+                <FileWarning className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <span className="inline-block px-2.5 py-0.5 bg-red-100 text-red-700 font-bold text-[11px] rounded-full">
+                  ⚠️ 서류 형식 오류
+                </span>
+                <h3 className="text-base font-extrabold text-[#0A0A0A] leading-snug">
+                  이력서파일을 넣어주세요
+                </h3>
+                <p className="text-xs text-[#555555]">
+                  선택하신 파일은 이력서 서류가 아닙니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-red-50/80 border border-red-200/80 rounded-xl space-y-1.5 text-xs">
+              <p className="font-bold text-red-950 truncate">
+                📄 파일명: {invalidFileModal.fileName}
+              </p>
+              <p className="text-red-800 leading-relaxed font-medium">
+                {invalidFileModal.reason}
+              </p>
+            </div>
+
+            <div className="p-3.5 bg-[#FAF5E8] border border-[#EAE5DC] rounded-xl text-xs space-y-2">
+              <p className="font-bold text-[#0A0A0A] flex items-center gap-1">
+                💡 등록 가능한 이력서 서류 형식:
+              </p>
+              <p className="text-[#555555] leading-relaxed">
+                PDF, Word(.docx), 한글(.hwp), 텍스트(.txt) 등 <strong>이력서, 경력증명서, 포트폴리오 문서</strong>만 등록 가능합니다.
+              </p>
+
+              <div className="pt-2 border-t border-[#EAE5DC] space-y-1.5">
+                <p className="font-bold text-red-700 text-[11.5px] flex items-center gap-1">
+                  🚫 이력서가 아닌 파일의 대표 예시:
+                </p>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px] text-[#444444]">
+                  <div className="p-1.5 bg-white rounded-lg border border-red-100 flex items-center gap-1">
+                    <span className="text-red-500 font-bold">•</span>
+                    <span><strong>프로젝트일지:</strong> 데일리스크럼, 회의록, PRD</span>
+                  </div>
+                  <div className="p-1.5 bg-white rounded-lg border border-red-100 flex items-center gap-1">
+                    <span className="text-red-500 font-bold">•</span>
+                    <span><strong>디자인/가이드:</strong> DESIGN-CLAY, 시스템명세</span>
+                  </div>
+                  <div className="p-1.5 bg-white rounded-lg border border-red-100 flex items-center gap-1">
+                    <span className="text-red-500 font-bold">•</span>
+                    <span><strong>소스코드:</strong> .js, .ts, .py, .json, .html</span>
+                  </div>
+                  <div className="p-1.5 bg-white rounded-lg border border-red-100 flex items-center gap-1">
+                    <span className="text-red-500 font-bold">•</span>
+                    <span><strong>실행/압축/미디어:</strong> .exe, .zip, .mp3, .mp4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setInvalidFileModal({ isOpen: false, fileName: '', reason: '' })}
+                className="w-full sm:w-auto px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
