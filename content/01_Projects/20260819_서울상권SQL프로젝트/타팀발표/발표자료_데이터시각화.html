@@ -1,0 +1,2290 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서울 지하철, 한 명 태울 때마다 손실 — 원인은 무엇인가</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+      :root {
+        --primary: #0066ff;
+        --on-primary: #ffffff;
+        --canvas: #ffffff;
+        --heading: #171719;
+        --body-c: #333333;
+        --secondary: #858688;
+        --subtle: #f8f8f8;
+        --hairline: #e8e9ea;
+        --orange: #eb6834;
+        --violet: #4a3aa7;
+        --amber: #c9860b;
+        --amber-fill: #eda100;
+        --radius-card: 12px;
+        --radius-control: 8px;
+        --font:
+          'Pretendard Variable', 'Pretendard', -apple-system,
+          BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      body {
+        font-family: var(--font);
+        background: var(--subtle);
+        color: var(--body-c);
+        overflow: hidden;
+        word-break: keep-all;
+        overflow-wrap: break-word;
+      }
+      .deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 56px 64px 72px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(14px);
+        transition:
+          opacity 0.38s ease,
+          transform 0.38s ease;
+        background: var(--canvas);
+      }
+      .slide.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      .slide-inner {
+        width: 100%;
+        max-width: 1180px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.3024px;
+        color: var(--primary);
+        background: rgba(0, 102, 255, 0.07);
+        padding: 6px 12px;
+        border-radius: 9999px;
+        width: fit-content;
+        margin-bottom: 16px;
+      }
+      .eyebrow .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+      h1.title {
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 1.36;
+        letter-spacing: -0.4268px;
+        color: var(--heading);
+        margin: 0 0 10px;
+      }
+      h2.title {
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1.36;
+        letter-spacing: -0.4268px;
+        color: var(--heading);
+        margin: 0 0 8px;
+      }
+      p.lede {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--secondary);
+        margin: 0 0 28px;
+        max-width: 820px;
+      }
+      p.lede b {
+        color: var(--body-c);
+        font-weight: 600;
+      }
+
+      .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin: 8px 0 26px;
+      }
+      .kpi {
+        background: var(--subtle);
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius-card);
+        padding: 16px 18px;
+        min-width: 0;
+      }
+      .kpi .kpi-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--secondary);
+        letter-spacing: 0.3024px;
+        margin-bottom: 6px;
+      }
+      .kpi .kpi-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--heading);
+        letter-spacing: -0.4268px;
+      }
+      .kpi .kpi-value.accent {
+        color: var(--primary);
+      }
+      .kpi .kpi-value.warn {
+        color: var(--orange);
+      }
+      .kpi .kpi-sub {
+        font-size: 12px;
+        color: var(--secondary);
+        margin-top: 4px;
+      }
+
+      .chart-card {
+        background: var(--canvas);
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius-card);
+        padding: 20px 24px 14px;
+        box-shadow:
+          0 2px 4px -2px rgba(23, 23, 23, 0.06),
+          0 4px 6px -1px rgba(23, 23, 23, 0.06);
+      }
+      .chart-wrap {
+        position: relative;
+        width: 100%;
+      }
+      .chart-wrap.h340 {
+        height: 340px;
+      }
+      .chart-wrap.h300 {
+        height: 300px;
+      }
+      .chart-wrap.h120 {
+        height: 118px;
+      }
+      .panel-gap {
+        height: 6px;
+      }
+
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 14px;
+        gap: 24px;
+      }
+      .source-note {
+        font-size: 11.5px;
+        color: var(--secondary);
+        line-height: 1.5;
+        max-width: 640px;
+      }
+      details.table-toggle {
+        font-size: 12px;
+      }
+      details.table-toggle summary {
+        cursor: pointer;
+        color: var(--primary);
+        font-weight: 500;
+        list-style: none;
+        user-select: none;
+        padding: 5px 10px;
+        border: 1px inset rgba(112, 115, 124, 0.16);
+        border-radius: var(--radius-control);
+        display: inline-block;
+        white-space: nowrap;
+      }
+      details.table-toggle summary::-webkit-details-marker {
+        display: none;
+      }
+      .data-table {
+        margin-top: 10px;
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+      .data-table th,
+      .data-table td {
+        border: 1px solid var(--hairline);
+        padding: 6px 10px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .data-table th {
+        background: var(--subtle);
+        color: var(--body-c);
+        font-weight: 600;
+        text-align: right;
+      }
+      .data-table td:first-child,
+      .data-table th:first-child {
+        text-align: left;
+        color: var(--secondary);
+      }
+      .data-table.wrap td,
+      .data-table.wrap th {
+        white-space: normal;
+        line-height: 1.5;
+      }
+      .data-table.wrap td:nth-child(2),
+      .data-table.wrap th:nth-child(2) {
+        width: 40%;
+      }
+      .data-table.wrap td:nth-child(3),
+      .data-table.wrap th:nth-child(3) {
+        width: 15%;
+      }
+      .data-table.wrap td:nth-child(4),
+      .data-table.wrap th:nth-child(4) {
+        width: 22%;
+      }
+
+      .insight-box {
+        background: var(--subtle);
+        border-left: 3px solid var(--primary);
+        border-radius: 0 var(--radius-control) var(--radius-control) 0;
+        padding: 12px 16px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--body-c);
+        margin-top: 14px;
+      }
+      .insight-box b {
+        color: var(--heading);
+      }
+      .insight-box.orange {
+        border-left-color: var(--orange);
+      }
+      .insight-box.violet {
+        border-left-color: var(--violet);
+      }
+      .insight-box.feature {
+        font-size: 14.5px;
+        padding: 16px 20px;
+        border-left-width: 4px;
+        background: rgba(0, 102, 255, 0.05);
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      .insight-box ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+      }
+      .insight-box li {
+        margin-bottom: 6px;
+      }
+      .insight-box li:last-child {
+        margin-bottom: 0;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 22px;
+        align-items: start;
+      }
+
+      /* cover */
+      .cover {
+        align-items: flex-start;
+      }
+      .cover .badge {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--on-primary);
+        background: var(--primary);
+        padding: 6px 14px;
+        border-radius: 9999px;
+        margin-bottom: 24px;
+      }
+      .cover h1 {
+        font-size: 44px;
+        line-height: 1.32;
+        letter-spacing: -0.6px;
+        max-width: 780px;
+      }
+      .cover .sub {
+        font-size: 16px;
+        color: var(--secondary);
+        margin-top: 14px;
+        max-width: 640px;
+        line-height: 1.6;
+      }
+      .cover .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 28px;
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--hairline);
+        width: 100%;
+        max-width: 900px;
+      }
+      .cover .meta div {
+        font-size: 13px;
+        color: var(--secondary);
+      }
+      .cover .meta div b {
+        display: block;
+        color: var(--heading);
+        font-size: 15px;
+        font-weight: 600;
+        margin-top: 3px;
+      }
+
+      .action-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .action-list li {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        background: var(--subtle);
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius-card);
+        padding: 16px 18px;
+      }
+      .action-list .num {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .action-list .txt {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--body-c);
+      }
+      .action-list .txt b {
+        color: var(--heading);
+      }
+      .action-list.grid2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .action-list.grid2col li {
+        padding: 12px 14px;
+        gap: 10px;
+      }
+      .action-list.grid2col .num {
+        width: 22px;
+        height: 22px;
+        font-size: 11.5px;
+      }
+      .action-list.grid2col .txt {
+        font-size: 12.5px;
+        line-height: 1.52;
+      }
+
+      .section-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--heading);
+        margin: 0 0 10px;
+      }
+
+      .learn-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .learn-step {
+        background: rgba(0, 102, 255, 0.05);
+        border: 1px solid rgba(0, 102, 255, 0.16);
+        border-radius: var(--radius-card);
+        padding: 16px 18px;
+      }
+      .learn-step .learn-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+      }
+      .learn-step .learn-head {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--heading);
+        margin-bottom: 6px;
+      }
+      .learn-step .learn-body {
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--body-c);
+      }
+
+      .closing {
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .closing h1 {
+        font-size: 48px;
+        font-weight: 600;
+        color: var(--heading);
+        letter-spacing: -0.6px;
+        margin: 0;
+      }
+
+      /* nav */
+      .navbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.96),
+          rgba(255, 255, 255, 0)
+        );
+        z-index: 50;
+      }
+      .navbar button {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px inset rgba(112, 115, 124, 0.16);
+        background: #fff;
+        color: var(--heading);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .navbar button:hover {
+        background: var(--subtle);
+      }
+      .navbar button:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+      .dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--hairline);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .dots span.active {
+        background: var(--primary);
+        width: 18px;
+        border-radius: 4px;
+      }
+      .slide-index {
+        position: fixed;
+        top: 20px;
+        right: 24px;
+        font-size: 12px;
+        color: var(--secondary);
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 5px 10px;
+        border-radius: 9999px;
+        border: 1px solid var(--hairline);
+      }
+
+      .legend-note {
+        font-size: 11px;
+        color: var(--secondary);
+        margin-top: 2px;
+      }
+      .two-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .news-card {
+        background: var(--canvas);
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius-card);
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow:
+          0 2px 4px -2px rgba(23, 23, 23, 0.06),
+          0 4px 6px -1px rgba(23, 23, 23, 0.06);
+      }
+      .news-outlet {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--secondary);
+        width: fit-content;
+      }
+      .news-outlet .bar {
+        width: 3px;
+        height: 12px;
+        border-radius: 2px;
+        background: var(--primary);
+      }
+      .news-headline {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--heading);
+      }
+      .news-byline {
+        font-size: 11px;
+        color: var(--secondary);
+      }
+      .news-stat {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid var(--hairline);
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--body-c);
+      }
+      .news-stat b {
+        color: var(--orange);
+      }
+
+      /* compact variant for the merged intro slide */
+      .slide-compact p.lede {
+        margin-bottom: 16px;
+      }
+      .slide-compact .news-grid {
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .slide-compact .news-card {
+        padding: 12px 14px;
+        gap: 6px;
+      }
+      .slide-compact .news-outlet {
+        font-size: 10.5px;
+      }
+      .slide-compact .news-headline {
+        font-size: 12.5px;
+        line-height: 1.35;
+      }
+      .slide-compact .news-stat {
+        font-size: 11px;
+        padding-top: 7px;
+        line-height: 1.45;
+      }
+      .slide-compact .kpi-row {
+        margin: 0 0 14px;
+      }
+      .slide-compact .kpi {
+        padding: 11px 14px;
+      }
+      .slide-compact .kpi .kpi-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      .slide-compact .kpi .kpi-value {
+        font-size: 21px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slide-index" id="slideIndex">1 / 16</div>
+
+    <div class="deck" id="deck">
+      <!-- 0. COVER -->
+      <section class="slide cover active">
+        <div class="slide-inner">
+          <div class="badge">데이터 분석 프로젝트</div>
+          <h1>
+            서울 지하철, 한 명 태울 때마다 손실 <br />
+            원인이 무엇일까?
+          </h1>
+          <p class="sub">
+            2025년 승객 1명을 수송하는 데 든 원가는 1,817원, 실제로 받은 평균
+            운임은 1,036원 — 승객 1명당 781원 손실, 원가보전율 57%. 최근 5년간
+            원가보전율이 단 한 번도 50%대를 벗어나지 못한 이 구조를 세 가지
+            가설로 뜯어봅니다.
+          </p>
+          <div class="meta">
+            <div>팀명<b>자리찜</b></div>
+            <div>의사결정자<b>박도현</b></div>
+            <div>프로젝트 매니저<b>김양선</b></div>
+            <div>연결 담당자<b>이윤지</b></div>
+            <div>기록 담당자<b>김상철</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1. 문제정의 (뉴스훅 + 문제정의 통합) -->
+      <section class="slide slide-compact">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>1 · 문제 정의</div>
+          <h1 class="title">왜 태울수록 손실이 나는가</h1>
+          <p class="lede">
+            서울교통공사·서울시 정책 담당자가
+            <b>① 정부·지자체에 무임수송 손실 지원을 요청할 근거</b>를 정리하고,
+            <b>② 요금 조정·비용 구조 개선의 우선순위</b>를 정하는 데 쓰는
+            분석입니다. 이미 여러 매체가 "781원 손실"을 보도했지만,
+            <b>왜 매년 손실이 커지는지</b>에 대한 구조적 설명은 없었습니다.
+          </p>
+
+          <div class="news-grid">
+            <div class="news-card">
+              <div class="news-outlet">
+                <span class="bar"></span>파이낸셜뉴스 · 이창훈 기자 · 2026.06.12
+              </div>
+              <div class="news-headline">
+                "승객마다 781원 손실"... 서울교통공사, 재정 한계 봉착
+              </div>
+              <div class="news-stat">
+                수송원가 1,817원 vs 평균운임 1,036원 —
+                <b>승객 1명당 781원 손실</b>을 헤드라인으로 제시.
+              </div>
+            </div>
+            <div class="news-card">
+              <div class="news-outlet">
+                <span class="bar"></span>연합뉴스 · 이재경 기자 · 2026.06.12
+              </div>
+              <div class="news-headline">
+                무임 수송 손실 5년 새 70% 증가... 서울지하철 적자 폭 늘어
+              </div>
+              <div class="news-stat">
+                무임수송 손실 증가율(<b>5년간 +70%</b>)에 초점 — 하지만
+                이자비용·유지보수비 등 다른 원인은 언급 없음.
+              </div>
+            </div>
+            <div class="news-card">
+              <div class="news-outlet">
+                <span class="bar"></span>TBS · 김종민 기자 · 2026.06.12
+              </div>
+              <div class="news-headline">
+                고령화에 커지는 지하철 적자... 무임수송 손실 5년새 70%↑
+              </div>
+              <div class="news-stat">
+                2025년 당기순손실 <b>8,268억원(전년비 +14.2%)</b>, 공익서비스
+                비용(8,167억)이 순손실과 거의 맞먹는다고 지적.
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="kpi-label">2025년 승차당 원가</div>
+              <div class="kpi-value">1,817원</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">2025년 평균 운임</div>
+              <div class="kpi-value">1,036원</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">승차당 손실</div>
+              <div class="kpi-value warn">-781원</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">원가보전율</div>
+              <div class="kpi-value warn">57.0%</div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <b>질문</b> — 서울 지하철, 한 명 태울 때마다 손실 — 원인이 무엇일까?
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 데이터 소개 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>2 · 데이터 소개</div>
+          <h1 class="title">어떤 데이터로 검증했는가</h1>
+          <p class="lede">
+            서울교통공사 재무제표·서울열린데이터광장 원본을 팀에서 직접
+            적재·가공했습니다.
+          </p>
+          <div class="chart-card">
+            <table class="data-table wrap" style="width: 100%">
+              <thead>
+                <tr>
+                  <th style="text-align: left">스키마 / 파일</th>
+                  <th style="text-align: left">내용</th>
+                  <th style="text-align: left">범위</th>
+                  <th style="text-align: left">출처</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="text-align: left"><b>seoul_metro_finance</b></td>
+                  <td style="text-align: left">
+                    연간 영업수익·영업비용, 총괄원가, 요금현실화율
+                  </td>
+                  <td style="text-align: left">2021–2025</td>
+                  <td style="text-align: left">
+                    db.ttaya.dev 클래스 DB(seoul_metro_finance)
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left"><b>seoul_subway_v2</b></td>
+                  <td style="text-align: left">
+                    월별 유·무임 승하차, 역·호선 마스터, 2025년 계정별 시산표
+                  </td>
+                  <td style="text-align: left">승하차 2015.01–2026.07</td>
+                  <td style="text-align: left">
+                    db.ttaya.dev 클래스 DB(seoul_subway_v2)
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <b>trial_balance_2021_2025</b>
+                  </td>
+                  <td style="text-align: left">
+                    서울교통공사 합계잔액시산표(계정별) 원본을 팀에서
+                    통합·category 분류
+                  </td>
+                  <td style="text-align: left">2021–2025</td>
+                  <td style="text-align: left">
+                    서울교통공사 합계잔액시산표 원본(팀 적재)
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <b>재무제표_분석(팀 자체 정리)</b>
+                  </td>
+                  <td style="text-align: left">
+                    서울교통공사 공식 홈페이지(seoulmetro.co.kr) 재무제표 원본을
+                    팀원이 직접 다운로드해 CSV로 통합 — 5개년 방법론과
+                    독립적으로 같은 결론에 도달해 교차검증용으로 활용
+                  </td>
+                  <td style="text-align: left">
+                    2017–2025(9개년, 2017·2018 주의)
+                  </td>
+                  <td style="text-align: left">
+                    seoulmetro.co.kr(서울교통공사 공식 홈페이지)
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left"><b>보도자료(2026-06-12)</b></td>
+                  <td style="text-align: left">공식 수치 — 검증용 대조 기준</td>
+                  <td style="text-align: left">2020–2025</td>
+                  <td style="text-align: left">
+                    서울교통공사 보도자료(2026-06-12)
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="insight-box orange" style="margin-top: 16px">
+            <b>데이터의 한계</b>
+            <ul>
+              <li>
+                <b>기후동행카드 손실 미반영</b> — 원본 재무제표는
+                "운수사업수익"을 단일 계정으로만 집계해 기후동행카드(정기권)
+                손실을 별도로 분리할 수 없습니다. 외부 보도 기준 이 손실은
+                2024년 1,527억 → 2025년 약 3,095억으로 빠르게 커지고 있어(자체
+                데이터로는 미검증), 무임승차 외에 적자를 키우는 또 다른 요인일
+                수 있습니다.
+              </li>
+              <li>
+                <b>9호선 운임 정산 구조</b> — 9호선은 1단계(개화~신논현)를
+                민간사업자 서울시메트로9호선(주)이, 2·3단계(언주~중앙보훈병원)를
+                서울교통공사가 직영합니다. 승하차 데이터는 서울교통공사 직영
+                구간만 사용했지만, 통합환승 요금은 노선 간 정산(거리·구간 비례
+                배분)을 거쳐 각 기관에 나뉘기 때문에 "평균운임"이 순수하게
+                유임승차 1인당 실제 요금이라 보기는 어렵습니다.
+              </li>
+            </ul>
+          </div>
+          <div class="insight-box" style="margin-top: 10px">
+            <b>검증 방식</b> — 본 자료의 모든 수치는 db.ttaya.dev 클래스
+            DB(seoul_metro_finance, seoul_subway_v2)에 직접 접속해 쿼리 결과로
+            재검증했습니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 가설 소개 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>3 · 가설 소개</div>
+          <h1 class="title">문제 정의를 세 가지 관점으로 나누다</h1>
+          <p class="lede">
+            "태울수록 손실"이라는 큰 질문을 데이터로 확인 가능한 작은 질문 3개로
+            좁혔습니다.
+          </p>
+          <ul class="action-list">
+            <li>
+              <span class="num">1</span
+              ><span class="txt"
+                ><b>원가 구조</b> — 수익보다 1인당 운영비가 더 클 것이다.
+                <br /><span style="color: var(--secondary)"
+                  >확인하고 싶은 것: 수송원가와 평균운임의 격차가 5년간
+                  구조적으로 존재하는가?</span
+                ></span
+              >
+            </li>
+            <li>
+              <span class="num">2</span
+              ><span class="txt"
+                ><b>무임승차</b> — 무임승차 비율이 늘어날수록, 운임 수익을 내는
+                승객 비중이 줄어서 적자가 커질 것이다. <br /><span
+                  style="color: var(--secondary)"
+                  >확인하고 싶은 것: 무임승차 비율·손실액이 매년 증가하는가,
+                  전체 적자와 함께 움직이는가?</span
+                ></span
+              >
+            </li>
+            <li>
+              <span class="num">3</span
+              ><span class="txt"
+                ><b>고정비</b> — 유지보수비·부채성 이자비용(사채·차입금 등) 같은
+                고정비가 매년 늘어서 적자를 키울 것이다. <br /><span
+                  style="color: var(--secondary)"
+                  >확인하고 싶은 것: 이자비용·유지보수비가 실제로 "매년"
+                  증가하는 항목인가?</span
+                ></span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 4. 분석 과정 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>4 · 분석 과정</div>
+          <h1 class="title">어떤 흐름으로 분석했는가</h1>
+          <ul class="action-list">
+            <li>
+              <span class="num">1</span
+              ><span class="txt"
+                ><b>승하차 데이터 파악</b> — 서울 지하철 승하차 DB를 분석해
+                유임·무임 승차 정보부터 확인했습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">2</span
+              ><span class="txt"
+                ><b>재무 데이터 확보</b> — 손실 구조를 보려면 재무 데이터가
+                필요해, 서울교통공사 재무제표 데이터를 별도로 확보해
+                분석했습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">3</span
+              ><span class="txt"
+                ><b>계산식 확보 및 가설 검증</b> — 보도자료에서 공식
+                계산식(수송원가·원가보전율)을 확인해 그대로 재현했더니 공식
+                수치(781원/57%)와 근접하게 나와 방법론을 교차검증했고, 이를
+                토대로 3개 가설을 검증했습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">4</span
+              ><span class="txt"
+                ><b>시각화</b> — 검증 결과를 발표용 차트로 정리했습니다.</span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 5. 가설1 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 가설 1 · 원가 구조
+          </div>
+          <h1 class="title">수익보다 1인당 운영비가 더 클 것이다</h1>
+          <p class="lede">
+            수송원가(막대, 좌축 · 원)와 평균운임(막대, 좌축 · 원),
+            원가보전율(선, 우축 · %)을 함께 봅니다.
+            <br />
+            5년 내내 원가보전율이 <b>50%대</b>를 벗어나지 못해, 태울수록
+            구조적으로 손실이 남는 구간입니다.
+          </p>
+          <div class="chart-card">
+            <div class="chart-wrap h340"><canvas id="chart-h1"></canvas></div>
+            <div class="foot-row">
+              <div class="source-note">
+                공식: 수송원가 = 총괄원가(인건비+경비+자본비용) ÷ 승차인원 ·
+                평균운임 = 운수사업수익 ÷ 승차인원 · 원가보전율 =
+                평균운임/수송원가×100.<br />출처:
+                seoul_metro_finance.fare_realization_rate(DB 직접 조회로 재검증,
+                2026-08-25) · 서울교통공사 보도자료(2026-06-12) 표1과 대조.
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-h1"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box">
+            가설 1 확인: 원가보전율이 가장 좋았던 2025년에도 <b>57%</b>에 그쳐,
+            승객이 늘어도 태울 때마다 구조적으로 손실이 남는 만성 적자
+            구조입니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. 가설2-A (비율+손실액 통합) -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 가설 2 · 무임승차
+          </div>
+          <h1 class="title">무임승차, 비율도 손실액도 매년 늘어난다</h1>
+          <p class="lede">
+            무임승차 비율(선, 좌축 · %)과 추정손실액(막대, 우축 · 억원)을 함께
+            봅니다. 두 지표 모두 5개년 연속 증가했습니다.
+          </p>
+          <div class="chart-card">
+            <div class="chart-wrap h340"><canvas id="chart-h2a"></canvas></div>
+            <div class="foot-row">
+              <div class="source-note">
+                출처: seoul_subway_v2.ridership_fare × station(1~8호선 + 9호선
+                2·3단계 13개 역 기준). 추정손실액 = 무임승차 인원 × 그 해
+                평균요금 — 산출식은 서울시
+                보도자료(seoul.go.kr/news/news_report.do?nttNo=459570) 참고.
+                서울교통공사 공식 "공익서비스 무임수송손실" 회계 수치와는 산정
+                방식이 다름.
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-h2a"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box orange">
+            무임승차비율 16.00%(2021)→17.55%(2025), 추정손실액
+            2,094억→3,008억(+44%) — 5개년 연속 매년 증가.
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. 가설2-B (비중 vs 당기순손실) -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 가설 2 · 무임승차
+          </div>
+          <h1 class="title">당기순손실 중 무임승차손실 비중</h1>
+          <p class="lede">
+            막대(좌축 · %)는 당기순손실 100% 중 무임승차손실이 차지하는 비중,
+            선(우축 · 억원)은 같은 해의 당기순손실 실제 금액입니다.
+          </p>
+          <div class="chart-card">
+            <div class="chart-wrap h340"><canvas id="chart-h23"></canvas></div>
+            <div class="foot-row">
+              <div class="source-note">
+                무임승차손실은 자체 추정치(seoul_subway_v2.ridership_fare ×
+                seoul_metro_finance.fare_realization_rate, DB 직접 조회),
+                당기순손실은 seoul_metro_finance.annual_performance(DB 직접
+                조회, 보도자료 수치와 일치).
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-h23"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box orange">
+            무임승차손실 비중은 2023년 <b>49.5%</b>까지 상승 — 다만 전체 적자
+            규모와 매년 1:1로 움직이지는 않습니다(2023·2025년엔 오히려 적자
+            축소).
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. 가설3-A (이자비용+유지보수비 통합) -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 가설 3 · 고정비
+          </div>
+          <h1 class="title">
+            이자비용은 매년, 유지보수비는 스파이크로 늘어난다
+          </h1>
+          <p class="lede">
+            이자비용(선, 보라)과 유지보수비(선, 앰버)를 함께 봅니다. 패턴이 서로
+            다릅니다 — 하나는 꾸준히, 하나는 튀었다가 꺾입니다.
+          </p>
+          <div class="chart-card">
+            <div class="chart-wrap h340"><canvas id="chart-h3a"></canvas></div>
+            <div class="foot-row">
+              <div class="source-note">
+                출처: trial_balance_2021_2025, account_name
+                IN('이자비용','수선유지비','차량유지비'), 수탁사업원가 제외.
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-h3a"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box violet">
+            이자비용 594억→1,426억(4년 누적 <b>+140%</b>, 원인은 사채
+            26,380억→35,650억). 유지보수비는 2023년 833억(+103.9%) 스파이크 후
+            2년 연속 감소.
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. 가설3-B (고정비 비중 vs 당기순손실) -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 가설 3 · 고정비
+          </div>
+          <h1 class="title">당기순손실 중 고정비 비중</h1>
+          <p class="lede">
+            막대(좌축 · %)는 당기순손실 100% 중 이자비용·유지보수비가 차지하는
+            비중, 선(우축 · 억원)은 같은 해의 당기순손실 실제 금액입니다.
+          </p>
+          <div class="chart-card">
+            <div class="chart-wrap h340"><canvas id="chart-h33"></canvas></div>
+            <div class="foot-row">
+              <div class="source-note">
+                고정비 = 이자비용 + 유지보수비(수선유지비+차량유지비),
+                수탁사업원가 제외. 출처:
+                seoul_subway_v2.trial_balance_2021_2025,
+                seoul_metro_finance.annual_performance(모두 DB 직접 조회로
+                재검증).
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-h33"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box violet">
+            고정비 비중은 2023년 <b>36.5%</b>까지 치솟았습니다 — 유지보수비
+            스파이크와 이자비용 증가가 겹친 해입니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. 결론 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>5 · 핵심 인사이트 — 종합
+          </div>
+          <h1 class="title">승객은 회복됐지만, 손실은 다시 커지고 있다</h1>
+          <p class="lede">
+            위: 승차인원 추이(억 명, 점선은 2019년 코로나 이전 수준). 아래:
+            무임승차손실·이자비용·유지보수비(누적 영역, 억원)와 당기순손실 실제
+            금액(선). 영역과 선 사이의 간격은
+            <b>가설 1의 구조적 원가-운임 격차</b>로 설명됩니다.
+          </p>
+          <div class="chart-card">
+            <div class="two-panel">
+              <div class="chart-wrap h120">
+                <canvas id="chart-conc-top"></canvas>
+              </div>
+              <div class="panel-gap"></div>
+              <div class="chart-wrap" style="height: 250px">
+                <canvas id="chart-conc-bottom"></canvas>
+              </div>
+            </div>
+            <div class="foot-row">
+              <div class="source-note">
+                2020년 당기순손실 11,137억(코로나 최고 손실, 참고용 · 세부 항목
+                분해 데이터 없음). 2021–2025 세부 항목은 팀 자체 추정·시산표
+                집계.
+              </div>
+              <details class="table-toggle">
+                <summary>데이터 표 보기</summary>
+                <table class="data-table" id="table-conc"></table>
+              </details>
+            </div>
+          </div>
+          <div class="insight-box">
+            2020년 코로나로 당기순손실이 11,137억까지 치솟았고, 2023년까지 승객
+            회복과 함께 줄었습니다. 하지만 2023년을 저점으로
+            <b>2024·2025년 다시 증가</b> — 승객이 92% 수준까지 돌아온 지금도
+            손실이 커지는 건 <b>무임승차 증가</b>가 주된 원인이고, 여기에
+            <b>이자비용·유지보수비</b> 같은 고정비 증가가 겹치는 복합
+            구조입니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. 액션제안 A - 왜 지금인가 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>6 · 액션 제안</div>
+          <h1 class="title">왜 지금 움직여야 하는가</h1>
+          <p class="lede">
+            원가-운임 구조적 격차 위에 무임승차·사채 이자비용이 매년 얹히면서,
+            손실은 매년 반복되는 구조로 굳어지고 있습니다.
+          </p>
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="kpi-label">누적적자(결손금)</div>
+              <div class="kpi-value warn">19조 7,490억</div>
+              <div class="kpi-sub">2025년말 기준</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">부채비율</div>
+              <div class="kpi-value warn">149%</div>
+              <div class="kpi-sub">행안부 승인기준 130% 초과</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">사채 잔액</div>
+              <div class="kpi-value">3조 5,650억</div>
+              <div class="kpi-sub">5년 연속 증가</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">무임수송손실 5년 증감</div>
+              <div class="kpi-value warn">+70%</div>
+              <div class="kpi-sub">2020년 2,643억 → 2025년 4,488억</div>
+            </div>
+          </div>
+          <div class="insight-box">
+            이미 부채비율이 법정 승인기준(130%)을 넘어선 상태입니다.
+          </div>
+          <div class="source-note" style="margin-top: 12px">
+            출처: 서울교통공사 2025 회계연도 재무상태표(결손금·부채총계), 팀
+            자체 검증.
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. 액션제안 B - 무엇을 해야하는가 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow"><span class="dot"></span>6 · 액션 제안</div>
+          <h1 class="title">무엇을 해야 하는가</h1>
+          <ul class="action-list">
+            <li>
+              <span class="num">1</span
+              ><span class="txt"
+                ><b>무임수송 손실 정부 지원 요청 근거 강화</b> — 무임승차비율이
+                5년 연속 증가함을 재확인했으므로, 이 추세선을 정부·지자체 지원
+                협의 자료에 반영</span
+              >
+            </li>
+            <li>
+              <span class="num">2</span
+              ><span class="txt"
+                ><b>사채 의존도 모니터링 체계화</b> — 이자비용 증가의 핵심
+                원인이 사채로 확인된 만큼, 신규 사채 발행을 억제하고 상환 계획을
+                별도로 수립</span
+              >
+            </li>
+            <li>
+              <span class="num">3</span
+              ><span class="txt"
+                ><b>원가보전율 57%를 정기 추적 지표로 대시보드화</b> — 가설 1
+                검증 쿼리가 보도자료 공식 수치와 근접하게 재현되므로, 매년
+                재실행해 자체 모니터링</span
+              >
+            </li>
+            <li>
+              <span class="num">4</span
+              ><span class="txt"
+                ><b>무임승차 제도 개선 검토</b> — 영국(혼잡시간대
+                제한)·뉴욕(반값요금)·파리(소득기준 선별)·독일(지역별 할인권)처럼
+                해외는 "전면 무료"가 아닌 조건부 지원 방식으로 손실을 통제
+                중입니다. 서울도 지속가능한 제도 설계를 위해 벤치마킹 검토가
+                필요합니다</span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 13. 학습 내용 - 어려웠던 점 · 배운 점 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>7 · 학습 내용 및 다음 단계
+          </div>
+          <h1 class="title">무엇을 배웠는가</h1>
+
+          <div class="section-label">어려웠던 점</div>
+          <ul class="action-list grid2col">
+            <li>
+              <span class="num">1</span
+              ><span class="txt"
+                >필요한 데이터가 없거나 여러 소스에 흩어져 있어, 이를 모으고
+                정리하는 데 상당한 시간이 소요됐습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">2</span
+              ><span class="txt"
+                >재무제표의 생소한 회계 용어 탓에, 분석에 어떤 데이터를
+                사용해야 할지 판단하기 어려웠습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">3</span
+              ><span class="txt"
+                >AI가 산출한 수치(사채 규모)를 그대로 신뢰했다가, 원본 데이터와
+                대조한 뒤에야 오류를 발견했습니다. AI는 보조 도구일 뿐 결과를
+                무조건 신뢰해서는 안 되며, 원본 데이터로 교차검증하는 절차가
+                반드시 필요하다는 것을 배웠습니다.</span
+              >
+            </li>
+            <li>
+              <span class="num">4</span
+              ><span class="txt"
+                >제한된 시간 안에 태블로로 원하는 형태의 차트를 구현하는 데
+                어려움을 겪었습니다.</span
+              >
+            </li>
+          </ul>
+
+          <div class="section-label" style="margin-top: 20px">배운 점</div>
+          <div class="learn-steps">
+            <div class="learn-step">
+              <div class="learn-num">1</div>
+              <div class="learn-head">작은 숫자에서 출발</div>
+              <div class="learn-body">
+                "781원 손실"이라는 작은 숫자 하나로 시작했지만, 데이터를
+                겹겹이 뜯어보니 원가구조·무임승차·이자비용이 맞물린 문제의
+                본질에 닿을 수 있었습니다.
+              </div>
+            </div>
+            <div class="learn-step">
+              <div class="learn-num">2</div>
+              <div class="learn-head">생각보다 심각했던 본질</div>
+              <div class="learn-body">
+                누적적자 19조 7,490억원, 법정 부채비율까지 넘어선 상태라는 걸
+                이번에 처음 확인했습니다.
+              </div>
+            </div>
+            <div class="learn-step">
+              <div class="learn-num">3</div>
+              <div class="learn-head">복잡한 문제를 푸는 접근법</div>
+              <div class="learn-body">
+                "문제정의 → 가설 → 검증 → 인사이트 → 액션" 단계를 밟으면
+                실마리를 찾을 수 있다는 걸 배웠고, 다른 문제에도 이 접근법을
+                적용해볼 자신감이 생겼습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14. 다음 단계로 확장한다면 -->
+      <section class="slide">
+        <div class="slide-inner">
+          <div class="eyebrow">
+            <span class="dot"></span>7 · 학습 내용 및 다음 단계
+          </div>
+          <h1 class="title">다음엔 무엇을 볼 것인가</h1>
+
+          <div class="section-label">다음 단계로 확장한다면</div>
+          <ul class="action-list">
+            <li>
+              <span class="num">1</span
+              ><span class="txt"
+                ><b>9호선 정산구조를 반영해 평균운임 계산을 정교화</b> —
+                1단계(서울시메트로9호선)와 2·3단계(서울교통공사 직영) 간
+                통합환승 정산 방식을 데이터에 반영</span
+              >
+            </li>
+            <li>
+              <span class="num">2</span
+              ><span class="txt"
+                ><b>기후동행카드 손실을 원본 데이터에서 별도 계정으로 분리</b> —
+                현재는 외부 보도 수치로만 참고했던 부분을 공식 데이터로
+                검증</span
+              >
+            </li>
+            <li>
+              <span class="num">3</span
+              ><span class="txt"
+                ><b
+                  >고령화 추이 데이터를 확보해 무임승차 증가와의 상관관계를 직접
+                  검증</b
+                >
+                — 지금은 "고령화가 원인"이라는 언론 설명을 그대로 인용했을 뿐,
+                우리 데이터로 확인한 적은 없음</span
+              >
+            </li>
+            <li>
+              <span class="num">4</span
+              ><span class="txt"
+                >호선·역 단위로 원가·이용객 구조를 쪼개 어느 구간이 적자를 더
+                키우는지 분석</span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 15. 감사합니다 -->
+      <section class="slide closing">
+        <div class="slide-inner" style="align-items: center">
+          <div class="eyebrow" style="margin: 0 auto 20px">
+            <span class="dot"></span>자리찜
+          </div>
+          <h1>감사합니다</h1>
+        </div>
+      </section>
+    </div>
+
+    <div class="navbar">
+      <button id="prevBtn" aria-label="이전 슬라이드">‹</button>
+      <div class="dots" id="dots"></div>
+      <button id="nextBtn" aria-label="다음 슬라이드">›</button>
+    </div>
+
+    <script>
+      Chart.register(ChartDataLabels);
+      Chart.defaults.font.family =
+        "'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif";
+      Chart.defaults.color = '#858688';
+      Chart.defaults.plugins.datalabels.display = false;
+
+      const COLOR = {
+        ink: '#171719',
+        primary: '#0066ff',
+        secondary: '#858688',
+        hairline: '#e8e9ea',
+        orange: '#eb6834',
+        orangeFill: 'rgba(235,104,52,0.16)',
+        violet: '#4a3aa7',
+        amber: '#eda100',
+        amberText: '#a06800',
+        gray: '#c6c7c9',
+      };
+
+      const YEARS = ['2021년', '2022년', '2023년', '2024년', '2025년'];
+
+      function baseGrid() {
+        return { color: COLOR.hairline, drawTicks: false };
+      }
+      function baseTicks(extra) {
+        return Object.assign(
+          { color: COLOR.secondary, font: { size: 11 } },
+          extra || {},
+        );
+      }
+      function tooltipStyle() {
+        return {
+          backgroundColor: COLOR.ink,
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 10,
+          cornerRadius: 8,
+          displayColors: true,
+          boxPadding: 4,
+          titleFont: { size: 12, weight: '600' },
+          bodyFont: { size: 12 },
+        };
+      }
+      function legendStyle(pos) {
+        return {
+          position: pos || 'bottom',
+          align: 'start',
+          labels: {
+            color: COLOR.body || '#333333',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 7,
+            boxHeight: 7,
+            padding: 16,
+            font: { size: 12 },
+          },
+        };
+      }
+      function fixYAxisWidth(px) {
+        return {
+          id: 'fixYWidth',
+          afterFit: (scale) => {
+            scale.width = px;
+          },
+        };
+      }
+      function won(v) {
+        return v.toLocaleString('ko-KR') + '원';
+      }
+      function eok(v) {
+        return Math.round(v).toLocaleString('ko-KR') + '억';
+      }
+      function pct(v, d) {
+        return v.toFixed(d == null ? 1 : d) + '%';
+      }
+
+      /* ---------- 가설 1 : 수송원가/평균운임(막대,좌) + 원가보전율(선,우) ---------- */
+      const H1 = {
+        cost: [1988, 1904, 1760, 1853, 1817],
+        fare: [999, 1014, 962, 998, 1036],
+        rate: [50.3, 53.3, 54.7, 53.9, 57.0],
+      };
+      new Chart(document.getElementById('chart-h1'), {
+        type: 'bar',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'bar',
+              label: '수송원가 (원)',
+              data: H1.cost,
+              backgroundColor: COLOR.violet,
+              borderRadius: 4,
+              borderSkipped: false,
+              yAxisID: 'y',
+              order: 2,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 2,
+                color: COLOR.violet,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => v.toLocaleString('ko-KR'),
+              },
+            },
+            {
+              type: 'bar',
+              label: '평균운임 (원)',
+              data: H1.fare,
+              backgroundColor: COLOR.primary,
+              borderRadius: 4,
+              borderSkipped: false,
+              yAxisID: 'y',
+              order: 2,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 2,
+                color: COLOR.primary,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => v.toLocaleString('ko-KR'),
+              },
+            },
+            {
+              type: 'line',
+              label: '원가보전율 (%)',
+              data: H1.rate,
+              borderColor: COLOR.secondary,
+              backgroundColor: COLOR.secondary,
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: COLOR.secondary,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              yAxisID: 'y1',
+              order: 1,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 10,
+                color: COLOR.secondary,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => pct(v),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 22 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { display: false }, ticks: baseTicks() },
+            y: {
+              position: 'left',
+              grid: baseGrid(),
+              ticks: baseTicks({
+                callback: (v) => v.toLocaleString('ko-KR') + '원',
+              }),
+              title: {
+                display: true,
+                text: '원 (수송원가·평균운임)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+              min: 0,
+              suggestedMax: 2200,
+            },
+            y1: {
+              position: 'right',
+              grid: { display: false },
+              ticks: baseTicks({ callback: (v) => v + '%' }),
+              title: {
+                display: true,
+                text: '% (원가보전율)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+              min: 0,
+              suggestedMax: 70,
+            },
+          },
+          plugins: { legend: legendStyle(), tooltip: tooltipStyle() },
+        },
+      });
+      fillTable(
+        'table-h1',
+        ['연도', '수송원가(원)', '평균운임(원)', '원가보전율(%)'],
+        YEARS.map((y, i) => [
+          y,
+          H1.cost[i].toLocaleString(),
+          H1.fare[i].toLocaleString(),
+          H1.rate[i] + '%',
+        ]),
+      );
+
+      /* ---------- 가설 2-A : 무임승차비율(선,좌) + 추정손실액(막대,우) 콤보 차트 ---------- */
+      const H2A = {
+        free: [16.0, 16.48, 16.88, 17.26, 17.55],
+        loss: [2094.3, 2406.4, 2558.2, 2802.7, 3008.2],
+      };
+      new Chart(document.getElementById('chart-h2a'), {
+        type: 'bar',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'bar',
+              label: '무임승차 추정손실액 (억원)',
+              data: H2A.loss,
+              backgroundColor: COLOR.orangeFill,
+              borderColor: COLOR.orange,
+              borderWidth: 1.5,
+              borderRadius: 4,
+              borderSkipped: false,
+              yAxisID: 'y1',
+              order: 2,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 2,
+                color: COLOR.orange,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => eok(v),
+              },
+            },
+            {
+              type: 'line',
+              label: '무임승차 비율 (%)',
+              data: H2A.free,
+              borderColor: COLOR.secondary,
+              backgroundColor: COLOR.secondary,
+              borderWidth: 2.5,
+              pointRadius: 4.5,
+              pointBackgroundColor: COLOR.secondary,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              yAxisID: 'y',
+              order: 1,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 16,
+                color: COLOR.secondary,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => pct(v, 2),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 28 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { display: false }, ticks: baseTicks() },
+            y: {
+              position: 'left',
+              grid: baseGrid(),
+              ticks: baseTicks({ callback: (v) => v + '%' }),
+              title: {
+                display: true,
+                text: '% (무임승차 비율)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+              min: 14,
+              suggestedMax: 19,
+            },
+            y1: {
+              position: 'right',
+              grid: { display: false },
+              ticks: baseTicks({ callback: (v) => eok(v) }),
+              title: {
+                display: true,
+                text: '억원 (추정손실액)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+              min: 0,
+              suggestedMax: 3400,
+            },
+          },
+          plugins: { legend: legendStyle(), tooltip: tooltipStyle() },
+        },
+      });
+      fillTable(
+        'table-h2a',
+        ['연도', '무임승차비율(%)', '추정손실액(억원)'],
+        YEARS.map((y, i) => [y, H2A.free[i].toFixed(2), eok(H2A.loss[i])]),
+      );
+
+      /* ---------- 가설 2-B : 무임손실 비중(100%막대,좌축 %) + 당기순손실(선,우축 억원) 콤보 차트 ---------- */
+      const H23 = {
+        freeShare: [21.7, 37.5, 49.5, 38.7, 36.4],
+        otherShare: [78.3, 62.5, 50.5, 61.3, 63.6],
+        netLoss: [9644, 6420, 5173, 7241, 8268],
+      };
+      new Chart(document.getElementById('chart-h23'), {
+        type: 'bar',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'bar',
+              label: '무임승차손실 비중',
+              data: H23.freeShare,
+              backgroundColor: COLOR.orange,
+              stack: 's',
+              yAxisID: 'y',
+              order: 2,
+              datalabels: {
+                display: true,
+                color: '#fff',
+                font: { size: 11, weight: '600' },
+                formatter: (v) => v.toFixed(1) + '%',
+              },
+            },
+            {
+              type: 'bar',
+              label: '기타',
+              data: H23.otherShare,
+              backgroundColor: COLOR.hairline,
+              stack: 's',
+              yAxisID: 'y',
+              order: 2,
+              datalabels: { display: false },
+            },
+            {
+              type: 'line',
+              label: '당기순손실(억원)',
+              data: H23.netLoss,
+              borderColor: COLOR.primary,
+              backgroundColor: COLOR.primary,
+              borderWidth: 2.5,
+              pointRadius: 4.5,
+              pointBackgroundColor: COLOR.primary,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              yAxisID: 'y1',
+              order: 1,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 8,
+                color: COLOR.primary,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => eok(v),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 24 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: baseTicks() },
+            y: {
+              stacked: true,
+              position: 'left',
+              min: 0,
+              max: 100,
+              grid: baseGrid(),
+              ticks: baseTicks({ callback: (v) => v + '%' }),
+              title: {
+                display: true,
+                text: '% (무임승차손실 비중)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+            },
+            y1: {
+              position: 'right',
+              min: 0,
+              suggestedMax: 11000,
+              grid: { display: false },
+              ticks: baseTicks({ callback: (v) => eok(v) }),
+              title: {
+                display: true,
+                text: '억원 (당기순손실)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+            },
+          },
+          plugins: {
+            legend: legendStyle(),
+            tooltip: Object.assign(tooltipStyle(), {
+              callbacks: {
+                label: (c) =>
+                  c.dataset.label === '당기순손실(억원)'
+                    ? `당기순손실: ${eok(c.raw)}`
+                    : `${c.dataset.label}: ${c.raw.toFixed(1)}%`,
+              },
+            }),
+          },
+        },
+      });
+      fillTable(
+        'table-h23',
+        ['연도', '무임승차손실 비중(%)', '당기순손실(억원)'],
+        YEARS.map((y, i) => [
+          y,
+          H23.freeShare[i].toFixed(1) + '%',
+          H23.netLoss[i].toLocaleString(),
+        ]),
+      );
+
+      /* ---------- 가설 3-A : 이자비용(선) + 유지보수비(선), 동일 축(억원) ---------- */
+      const H3A = {
+        interest: [594, 848, 1054, 1306, 1426],
+        maintenance: [382, 408, 833, 562, 496],
+      };
+      new Chart(document.getElementById('chart-h3a'), {
+        type: 'line',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              label: '이자비용 (억원)',
+              data: H3A.interest,
+              borderColor: COLOR.violet,
+              backgroundColor: COLOR.violet,
+              borderWidth: 2.5,
+              pointRadius: 4.5,
+              pointBackgroundColor: COLOR.violet,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 8,
+                color: COLOR.violet,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => eok(v),
+              },
+            },
+            {
+              label: '유지보수비 (억원)',
+              data: H3A.maintenance,
+              borderColor: COLOR.amber,
+              backgroundColor: COLOR.amber,
+              borderWidth: 2.5,
+              pointRadius: 4.5,
+              pointBackgroundColor: COLOR.amber,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'bottom',
+                offset: 8,
+                color: COLOR.amberText,
+                font: { size: 11, weight: '700' },
+                formatter: (v) => eok(v),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 26, bottom: 10 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { display: false }, ticks: baseTicks() },
+            y: {
+              grid: baseGrid(),
+              ticks: baseTicks({ callback: (v) => eok(v) }),
+              title: {
+                display: true,
+                text: '억원',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+              min: 0,
+              suggestedMax: 1600,
+            },
+          },
+          plugins: { legend: legendStyle(), tooltip: tooltipStyle() },
+        },
+      });
+      fillTable(
+        'table-h3a',
+        ['연도', '이자비용(억원)', '유지보수비(억원)'],
+        YEARS.map((y, i) => [
+          y,
+          H3A.interest[i].toLocaleString(),
+          H3A.maintenance[i].toLocaleString(),
+        ]),
+      );
+
+      /* ---------- 가설 3-B : 고정비 비중(100%막대,좌축 %) + 당기순손실(선,우축 억원) 콤보 차트 ---------- */
+      const H33 = {
+        interestShare: [6.2, 13.2, 20.4, 18.0, 17.2],
+        maintShare: [4.0, 6.4, 16.1, 7.8, 6.0],
+        otherShare: [89.8, 80.4, 63.5, 74.2, 76.8],
+        netLoss: [9644, 6420, 5173, 7241, 8268],
+      };
+      new Chart(document.getElementById('chart-h33'), {
+        type: 'bar',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'bar',
+              label: '이자비용 비중',
+              data: H33.interestShare,
+              backgroundColor: COLOR.violet,
+              stack: 's',
+              yAxisID: 'y',
+              order: 2,
+              datalabels: {
+                display: true,
+                color: '#fff',
+                font: { size: 10, weight: '600' },
+                formatter: (v) => (v >= 8 ? v.toFixed(1) + '%' : ''),
+              },
+            },
+            {
+              type: 'bar',
+              label: '유지보수비 비중',
+              data: H33.maintShare,
+              backgroundColor: COLOR.amber,
+              stack: 's',
+              yAxisID: 'y',
+              order: 2,
+              datalabels: {
+                display: true,
+                color: COLOR.amberText,
+                font: { size: 10, weight: '700' },
+                formatter: (v) => (v >= 8 ? v.toFixed(1) + '%' : ''),
+              },
+            },
+            {
+              type: 'bar',
+              label: '기타',
+              data: H33.otherShare,
+              backgroundColor: COLOR.hairline,
+              stack: 's',
+              yAxisID: 'y',
+              order: 2,
+              datalabels: { display: false },
+            },
+            {
+              type: 'line',
+              label: '당기순손실(억원)',
+              data: H33.netLoss,
+              borderColor: COLOR.primary,
+              backgroundColor: COLOR.primary,
+              borderWidth: 2.5,
+              pointRadius: 4.5,
+              pointBackgroundColor: COLOR.primary,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              yAxisID: 'y1',
+              order: 1,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 8,
+                color: COLOR.primary,
+                font: { size: 11, weight: '600' },
+                formatter: (v) => eok(v),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 24 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: baseTicks() },
+            y: {
+              stacked: true,
+              position: 'left',
+              min: 0,
+              max: 100,
+              grid: baseGrid(),
+              ticks: baseTicks({ callback: (v) => v + '%' }),
+              title: {
+                display: true,
+                text: '% (고정비 비중)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+            },
+            y1: {
+              position: 'right',
+              min: 0,
+              suggestedMax: 11000,
+              grid: { display: false },
+              ticks: baseTicks({ callback: (v) => eok(v) }),
+              title: {
+                display: true,
+                text: '억원 (당기순손실)',
+                color: COLOR.secondary,
+                font: { size: 11 },
+              },
+            },
+          },
+          plugins: {
+            legend: legendStyle(),
+            tooltip: Object.assign(tooltipStyle(), {
+              callbacks: {
+                label: (c) =>
+                  c.dataset.label === '당기순손실(억원)'
+                    ? `당기순손실: ${eok(c.raw)}`
+                    : `${c.dataset.label}: ${c.raw.toFixed(1)}%`,
+              },
+            }),
+          },
+        },
+      });
+      fillTable(
+        'table-h33',
+        ['연도', '이자비용 비중(%)', '유지보수비 비중(%)', '당기순손실(억원)'],
+        YEARS.map((y, i) => [
+          y,
+          H33.interestShare[i] + '%',
+          H33.maintShare[i] + '%',
+          H33.netLoss[i].toLocaleString(),
+        ]),
+      );
+
+      /* ---------- 결론 : 승객수(상단) + 스택영역(무임/이자/유지)+당기순손실선(하단) ---------- */
+      const CONC = {
+        passengers: [13.1, 14.4, 15.76, 16.27, 16.54],
+        passengers2019: 17.9,
+        freeLoss: [2094.3, 2406.4, 2558.2, 2802.7, 3008.2],
+        interest: [594, 848, 1054, 1306, 1426],
+        maintenance: [382, 408, 833, 562, 496],
+        netLoss: [9644, 6420, 5173, 7241, 8268],
+      };
+      new Chart(document.getElementById('chart-conc-top'), {
+        type: 'line',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'line',
+              label: '승차인원(억명)',
+              data: CONC.passengers,
+              borderColor: COLOR.primary,
+              backgroundColor: COLOR.primary,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: COLOR.primary,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 6,
+                color: COLOR.primary,
+                font: { size: 10.5, weight: '600' },
+                formatter: (v) => v.toFixed(2) + '억명',
+              },
+            },
+            {
+              type: 'line',
+              label: '2019년(코로나 전) 17.90억명',
+              data: [17.9, 17.9, 17.9, 17.9, 17.9],
+              borderColor: COLOR.gray,
+              borderWidth: 1.5,
+              borderDash: [3, 3],
+              pointRadius: 0,
+              tension: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 22, bottom: 2, right: 40 } },
+          scales: {
+            x: { grid: { display: false }, ticks: { display: false } },
+            y: {
+              min: 12,
+              suggestedMax: 19,
+              display: false,
+              afterFit: (s) => {
+                s.width = 46;
+              },
+            },
+          },
+          plugins: { legend: legendStyle('top'), tooltip: tooltipStyle() },
+        },
+      });
+      new Chart(document.getElementById('chart-conc-bottom'), {
+        type: 'line',
+        data: {
+          labels: YEARS,
+          datasets: [
+            {
+              type: 'line',
+              label: '무임승차손실',
+              data: CONC.freeLoss,
+              borderColor: COLOR.orange,
+              backgroundColor: 'rgba(235,104,52,0.55)',
+              fill: 'origin',
+              stack: 'cost',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.25,
+            },
+            {
+              type: 'line',
+              label: '이자비용',
+              data: CONC.interest.map((v, i) => v + CONC.freeLoss[i]),
+              borderColor: COLOR.violet,
+              backgroundColor: 'rgba(74,58,167,0.55)',
+              fill: '-1',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.25,
+            },
+            {
+              type: 'line',
+              label: '유지보수비',
+              data: CONC.maintenance.map(
+                (v, i) => v + CONC.interest[i] + CONC.freeLoss[i],
+              ),
+              borderColor: COLOR.amber,
+              backgroundColor: 'rgba(237,161,0,0.55)',
+              fill: '-1',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.25,
+            },
+            {
+              type: 'line',
+              label: '당기순손실(실제)',
+              data: CONC.netLoss,
+              borderColor: COLOR.ink,
+              backgroundColor: COLOR.ink,
+              borderWidth: 2.5,
+              pointRadius: 4,
+              pointBackgroundColor: COLOR.ink,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 1.5,
+              tension: 0.3,
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 8,
+                color: COLOR.ink,
+                font: { size: 11, weight: '700' },
+                formatter: (v) => eok(v),
+              },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 26, right: 40 } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { grid: { display: false }, ticks: baseTicks() },
+            y: {
+              grid: baseGrid(),
+              ticks: baseTicks({ callback: (v) => eok(v) }),
+              min: 0,
+              suggestedMax: 11000,
+              afterFit: (s) => {
+                s.width = 46;
+              },
+            },
+          },
+          plugins: {
+            legend: legendStyle(),
+            tooltip: Object.assign(tooltipStyle(), {
+              callbacks: {
+                label: (c) => {
+                  if (c.dataset.label === '당기순손실(실제)')
+                    return `당기순손실: ${eok(c.raw)}`;
+                  const idx = c.dataIndex;
+                  if (c.dataset.label === '무임승차손실')
+                    return `무임승차손실: ${eok(CONC.freeLoss[idx])}`;
+                  if (c.dataset.label === '이자비용')
+                    return `이자비용: ${eok(CONC.interest[idx])}`;
+                  if (c.dataset.label === '유지보수비')
+                    return `유지보수비: ${eok(CONC.maintenance[idx])}`;
+                  return c.dataset.label;
+                },
+              },
+            }),
+          },
+        },
+      });
+      fillTable(
+        'table-conc',
+        [
+          '연도',
+          '승차인원(억명)',
+          '무임승차손실(억원)',
+          '이자비용(억원)',
+          '유지보수비(억원)',
+          '당기순손실(억원)',
+        ],
+        YEARS.map((y, i) => [
+          y,
+          CONC.passengers[i].toFixed(2),
+          eok(CONC.freeLoss[i]),
+          CONC.interest[i].toLocaleString(),
+          CONC.maintenance[i].toLocaleString(),
+          CONC.netLoss[i].toLocaleString(),
+        ]),
+      );
+
+      function fillTable(id, headers, rows) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let html =
+          '<thead><tr>' +
+          headers.map((h) => `<th>${h}</th>`).join('') +
+          '</tr></thead><tbody>';
+        rows.forEach((r) => {
+          html += '<tr>' + r.map((c) => `<td>${c}</td>`).join('') + '</tr>';
+        });
+        html += '</tbody>';
+        el.innerHTML = html;
+      }
+
+      /* ---------- 슬라이드 컨트롤러 ---------- */
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const dotsWrap = document.getElementById('dots');
+      const indexLabel = document.getElementById('slideIndex');
+      let current = 0;
+      slides.forEach((_, i) => {
+        const d = document.createElement('span');
+        d.addEventListener('click', () => go(i));
+        dotsWrap.appendChild(d);
+      });
+      function go(i) {
+        if (i < 0 || i >= slides.length) return;
+        slides[current].classList.remove('active');
+        current = i;
+        slides[current].classList.add('active');
+        Array.from(dotsWrap.children).forEach((d, idx) =>
+          d.classList.toggle('active', idx === current),
+        );
+        indexLabel.textContent = current + 1 + ' / ' + slides.length;
+        document.getElementById('prevBtn').disabled = current === 0;
+        document.getElementById('nextBtn').disabled =
+          current === slides.length - 1;
+      }
+      document
+        .getElementById('prevBtn')
+        .addEventListener('click', () => go(current - 1));
+      document
+        .getElementById('nextBtn')
+        .addEventListener('click', () => go(current + 1));
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown')
+          go(current + 1);
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') go(current - 1);
+      });
+      let touchStartX = null;
+      window.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+      });
+      window.addEventListener('touchend', (e) => {
+        if (touchStartX == null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (dx > 60) go(current - 1);
+        if (dx < -60) go(current + 1);
+        touchStartX = null;
+      });
+      go(0);
+    </script>
+  </body>
+</html>

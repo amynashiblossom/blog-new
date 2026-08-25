@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[가설2] 혜화동 PC방 주말 매출 검증 대시보드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141c; --bg-grid:#171a24; --surface:#1b1f2b; --surface-2:#212637;
+    --line:#2a3044; --text:#eef0f6; --text-dim:#9aa1b8; --text-faint:#5d6480;
+    --accent:#7c5cfc; --accent-2:#4fd6c8; --warn:#ffb020; --neg:#ff6b6b;
+    --weekday:#4a5178; --weekend:#7c5cfc; --weekend-glow: rgba(124,92,252,0.45);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
+  body{
+    background-image: linear-gradient(var(--bg-grid) 1px, transparent 1px), linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 42px 42px; background-position: -1px -1px;
+    padding: 28px 20px 60px;
+  }
+  .wrap{max-width:1240px; margin:0 auto;}
+
+  header{
+    display:flex; flex-direction:column; gap:16px;
+    padding:30px 32px 28px;
+    background: linear-gradient(150deg, #1a1e2c 0%, #14161f 70%);
+    border:1px solid var(--line); border-radius:18px; position:relative; overflow:hidden; margin-bottom:22px;
+  }
+  header::after{
+    content:""; position:absolute; top:-40%; right:-10%; width:420px; height:420px;
+    background: radial-gradient(circle, var(--weekend-glow) 0%, transparent 70%); filter: blur(10px); pointer-events:none;
+  }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent-2); display:flex; align-items:center; gap:10px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--accent-2);}
+  h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(22px, 3.2vw, 32px); line-height:1.28; max-width:860px; letter-spacing:-0.01em; position:relative; z-index:1;}
+  h1 .hl{color:var(--accent);}
+  .sub{color:var(--text-dim); font-size:14px; max-width:740px; line-height:1.6; position:relative; z-index:1;}
+  .meta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:2px; position:relative; z-index:1;}
+  .chip{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-dim); border:1px solid var(--line); padding:5px 11px; border-radius:100px; background:rgba(255,255,255,0.02);}
+
+  details.sql{ position:relative; z-index:1; margin-top:4px; }
+  details.sql summary{ cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--accent-2); list-style:none; }
+  details.sql summary::-webkit-details-marker{display:none;}
+  details.sql summary::before{content:"▸ "; }
+  details.sql[open] summary::before{content:"▾ "; }
+  details.sql pre{
+    margin-top:10px; background:#0d0f16; border:1px solid var(--line); border-radius:10px; padding:14px 16px;
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.65; color:#c7d0e6; overflow-x:auto;
+  }
+  details.sql pre .kw{color:#7c5cfc;} details.sql pre .fn{color:#4fd6c8;} details.sql pre .cm{color:#5d6480;}
+
+  .toggle-bar{ display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .toggle-label{ font-size:12.5px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; }
+  .toggle{ display:inline-flex; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; gap:4px; }
+  .toggle button{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:var(--text-dim);
+    background:transparent; border:none; padding:9px 18px; border-radius:8px; cursor:pointer; transition:all .15s ease;
+  }
+  .toggle button.active{ background:var(--accent); color:#0f1018; }
+  .toggle button:hover:not(.active){ color:var(--text); }
+
+  .verdict{
+    display:flex; align-items:center; gap:22px;
+    background: linear-gradient(90deg, rgba(124,92,252,0.14), rgba(79,214,200,0.06));
+    border:1px solid rgba(124,92,252,0.35); border-radius:16px; padding:22px 28px; margin-bottom:22px;
+  }
+  .verdict .badge{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; background:var(--accent); color:#0f1018; padding:9px 16px; border-radius:10px; white-space:nowrap;}
+  .verdict p{color:var(--text); font-size:14.5px; line-height:1.65;}
+  .verdict p b{color:var(--accent-2); font-weight:600;}
+  .verdict p .note{color:var(--warn);}
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
+  .stat-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px 20px 18px;}
+  .stat-card .label{font-size:12px; color:var(--text-dim); letter-spacing:0.02em; margin-bottom:10px;}
+  .stat-card .value{font-family:'JetBrains Mono',monospace; font-weight:600; font-size:26px; color:var(--text);}
+  .stat-card .value .unit{font-size:14px; color:var(--text-faint); margin-left:2px;}
+  .stat-card .foot{font-size:11.5px; color:var(--text-faint); margin-top:8px; line-height:1.5;}
+  .stat-card.accent .value{color:var(--accent-2);}
+
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px 24px 18px; margin-bottom:18px;}
+  .panel-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:16px; flex-wrap:wrap;}
+  .panel-title{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16.5px;}
+  .panel-desc{font-size:12.5px; color:var(--text-dim); margin-top:4px; max-width:660px; line-height:1.55;}
+  .legend-row{display:flex; gap:16px; font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;}
+  .legend-row span{display:flex; align-items:center; gap:6px;}
+  .sw{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  .row-2{display:grid; grid-template-columns:1.5fr 1fr; gap:18px;}
+  .row-2b{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:960px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .row-2, .row-2b{grid-template-columns:1fr;}
+  }
+
+  svg.chart{width:100%; height:auto; display:block; overflow:visible;}
+  .axis-label{ font-family:'JetBrains Mono',monospace; font-size:9.5px; fill:#7a819c; }
+  .grid-line{ stroke:#232838; stroke-width:1; }
+  .bar-tip{ font-family:'JetBrains Mono',monospace; font-size:9.5px; fill:#eef0f6; }
+
+  .table-scroll{max-height:380px; overflow-y:auto; border-radius:10px;}
+  table{width:100%; border-collapse:collapse; font-size:11.5px; font-family:'JetBrains Mono',monospace;}
+  th,td{padding:8px 9px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap;}
+  th:first-child, td:first-child{text-align:left; color:var(--text-dim);}
+  th{color:var(--text-faint); font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:0.03em; position:sticky; top:0; background:var(--surface); z-index:2;}
+  td{color:var(--text);}
+  tr:last-child td{border-bottom:none;}
+  .pos{color:var(--accent-2);}
+  .neg{color:var(--neg);}
+  tr.y2025 td{background:rgba(124,92,252,0.08);}
+
+  .foot-note{ font-size:12px; color:var(--text-faint); line-height:1.7; padding:18px 4px 4px; border-top:1px dashed var(--line); margin-top:6px;}
+  .foot-note b{color:var(--text-dim);}
+
+  .tooltip-box{
+    position:fixed; pointer-events:none; background:#0d0f16; border:1px solid var(--line);
+    border-radius:8px; padding:8px 11px; font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,0.4); z-index:50; display:none; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>HYPOTHESIS TEST · [가설 2] · 종로구 혜화동 · PC방 업종(CS200019)</div>
+    <h1>혜화동 PC방은 <span class="hl">주중보다 주말</span>에 매출이 더 높을까?</h1>
+    <p class="sub">trade_area × sales 조인 쿼리를 <b style="color:var(--text)">기준_년분기_코드</b>로 GROUP BY하여 20개 분기 각각을 개별 행으로 집계한 결과(2번가설_검증자료.csv)를 기반으로, <b style="color:var(--text)">① 전체 기간(2021Q1~2025Q4)</b>과 <b style="color:var(--text)">② 2025년만(2025Q1~Q4)</b> 두 범위로 가설을 검증합니다.</p>
+    <div class="meta-row">
+      <span class="chip">상권: 대학로(혜화역) · 종로구 혜화동</span>
+      <span class="chip">업종: CS200019 (PC방)</span>
+      <span class="chip">쿼리 그레인: 분기별 (20행)</span>
+    </div>
+    <details class="sql">
+      <summary>실행한 SQL 보기 (분기별 그레인 + QoQ/이동평균 확장)</summary>
+      <pre><span class="kw">-- 1) 기본 분기별 집계 쿼리</span>
+<span class="kw">SELECT</span>
+    s.기준_년분기_코드, t.자치구_코드_명, t.상권_코드_명, s.서비스_업종_코드, <span class="fn">'PC방'</span> <span class="kw">AS</span> 업종명,
+    <span class="fn">SUM</span>(s.당월_매출_금액) <span class="kw">AS</span> 총_매출_금액,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(s.주중_매출_금액)/5, 0) <span class="kw">AS</span> 주중_일평균_매출,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(s.주말_매출_금액)/2, 0) <span class="kw">AS</span> 주말_일평균_매출,
+    <span class="fn">ROUND</span>((<span class="fn">SUM</span>(s.주말_매출_금액)/2)/<span class="fn">NULLIF</span>(<span class="fn">SUM</span>(s.주중_매출_금액)/5,0), 2) <span class="kw">AS</span> 주말_대비_주중_매출배수
+<span class="kw">FROM</span> trade_area t <span class="kw">JOIN</span> sales s <span class="kw">ON</span> t.상권_코드 = s.상권_코드
+<span class="kw">WHERE</span> s.기준_년분기_코드 <span class="kw">BETWEEN</span> 20211 <span class="kw">AND</span> 20254
+  <span class="kw">AND</span> s.서비스_업종_코드 = <span class="fn">'CS200019'</span>
+  <span class="kw">AND</span> (t.상권_코드_명 <span class="kw">LIKE</span> <span class="fn">'%대학로%'</span> <span class="kw">OR</span> t.상권_코드_명 <span class="kw">LIKE</span> <span class="fn">'%혜화%'</span>)
+<span class="kw">GROUP BY</span> s.기준_년분기_코드, t.자치구_코드_명, t.상권_코드_명, s.서비스_업종_코드
+<span class="kw">ORDER BY</span> t.상권_코드_명, s.기준_년분기_코드;
+
+<span class="kw">-- 2) 서브쿼리로 감싸서 QoQ 증감 + 4분기 이동평균 추가</span>
+<span class="kw">SELECT</span> *,
+    총_매출_금액 - <span class="fn">LAG</span>(총_매출_금액) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> 기준_년분기_코드) <span class="kw">AS</span> QoQ_증감액,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(총_매출_금액) <span class="kw">OVER</span> (
+        <span class="kw">ORDER BY</span> 기준_년분기_코드 <span class="kw">ROWS BETWEEN</span> 3 <span class="kw">PRECEDING AND CURRENT ROW</span>
+    ), 0) <span class="kw">AS</span> 총매출_4분기이동평균
+<span class="kw">FROM</span> ( <span class="cm">/* 위 1)번 쿼리 */</span> ) base
+<span class="kw">ORDER BY</span> 기준_년분기_코드;</pre>
+    </details>
+  </header>
+
+  <div class="toggle-bar">
+    <span class="toggle-label">분석 범위</span>
+    <div class="toggle">
+      <button id="btnFull" class="active">전체 기간 · 2021Q1–2025Q4 (20분기)</button>
+      <button id="btn2025">2025년만 · 2025Q1–Q4 (4분기)</button>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <div class="badge">가설 채택</div>
+    <p id="verdictText"></p>
+  </div>
+
+  <div class="stat-grid" id="statGrid"></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title" id="barTitle">분기별 주중 vs 주말 일평균 매출</div>
+        <div class="panel-desc" id="barDesc"></div>
+      </div>
+      <div class="legend-row">
+        <span><i class="sw" style="background:var(--weekday)"></i>주중 일평균</span>
+        <span><i class="sw" style="background:var(--weekend)"></i>주말 일평균</span>
+      </div>
+    </div>
+    <div id="chartBarHost"></div>
+  </div>
+
+  <div class="row-2">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">주말_대비_주중_매출배수 추이 (전체 20분기)</div>
+          <div class="panel-desc">1.0 기준선(회색 점선) 위는 '주말 하루 매출 &gt; 주중 하루 매출'. 20개 분기 전부 기준선 위 — 진한 보라 점이 2025년.</div>
+        </div>
+      </div>
+      <div id="chartRatioHost"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="panel-title">분기별 쿼리 결과 전체 (20행)</div></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>분기</th><th>총매출</th><th>주중_일평균</th><th>주말_일평균</th><th>배수</th><th>QoQ</th></tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+      <div class="foot-note">음영 = 2025년 4개 분기 · QoQ = 전분기 대비 총매출 증감률</div>
+    </div>
+  </div>
+
+  <div class="row-2b">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">QoQ 총매출 증감률 (%)</div>
+          <div class="panel-desc">LAG 윈도우 함수로 산출한 전분기 대비 증감률. 2025Q3에 +94.9%로 전체 구간 중 최대 증가폭을 기록했습니다.</div>
+        </div>
+      </div>
+      <div id="chartQoQHost"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">총매출 4분기 이동평균 추세</div>
+          <div class="panel-desc">분기별 변동을 완화한 구조적 추세선. 2024년 저점 이후 2025년 들어 이동평균이 다시 상승하는 국면입니다.</div>
+        </div>
+      </div>
+      <div id="chartMAHost"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:0;">
+    <div class="panel-title" style="margin-bottom:12px;">인사이트 요약</div>
+    <table>
+      <thead><tr><th style="text-align:left;">구분</th><th style="text-align:left;">전체 기간 (20분기)</th><th style="text-align:left;">2025년만 (4분기)</th></tr></thead>
+      <tbody>
+        <tr><td>가설 검증</td><td style="text-align:left;" class="pos">채택 (20/20 분기, 100%)</td><td style="text-align:left;" class="pos">채택 (4/4 분기, 100%)</td></tr>
+        <tr><td>상관계수 R (point-biserial)</td><td style="text-align:left;">0.469 (p=0.0023)</td><td style="text-align:left;">0.488 (p=0.220, 표본 부족)</td></tr>
+        <tr><td>대응표본 t-검정</td><td style="text-align:left;">t=8.16, p&lt;0.0001</td><td style="text-align:left;">t=3.07, p=0.055 (경계·참고용)</td></tr>
+        <tr><td>효과크기 Cohen's d</td><td style="text-align:left;">1.83 (큰 효과)</td><td style="text-align:left;">1.53 (큰 효과)</td></tr>
+        <tr><td>평균 주말/주중 배수</td><td style="text-align:left;">1.32배</td><td style="text-align:left;">1.39배 (전체 평균보다 높음)</td></tr>
+        <tr><td>해석</td><td style="text-align:left;" colspan="2">2025년만 볼 때는 표본이 4개뿐이라 p값이 통계적 관행상 유의수준(0.05) 근처에 걸리지만, <b style="color:var(--text)">방향성(주말&gt;주중)은 100% 일관되고 배수는 오히려 전체 평균보다 커짐</b>. 전체 20분기 데이터가 이 결론의 통계적 신뢰도를 뒷받침하므로, 2025년의 패턴은 우연이 아니라 장기 추세의 연장으로 해석 가능.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot-note">데이터 출처: 2번가설_검증자료.csv (trade_area ⋈ sales, CS200019 PC방, 대학로/혜화 LIKE 필터, 기준_년분기_코드 BETWEEN 20211 AND 20254, 분기별 GROUP BY) · QoQ·이동평균은 LAG/윈도우 함수 로직을 동일하게 재현하여 산출. 모든 차트는 외부 라이브러리 없이 순수 SVG로 렌더링됩니다.</div>
+</div>
+
+<div class="tooltip-box" id="tooltip"></div>
+
+<script>
+(function(){
+"use strict";
+
+const moneyFull = (v) => Math.round(v).toLocaleString('ko-KR') + '원';
+const moneyShort = (v) => (v/1e6).toFixed(1) + '백만';
+
+const raw = [
+  {q:'20211', label:'21Q1', total:214628785, wd:28497916, we:36069602, ratio:1.27},
+  {q:'20212', label:'21Q2', total:249709243, wd:32205248, we:44341502, ratio:1.38},
+  {q:'20213', label:'21Q3', total:227049516, wd:28652020, we:41894709, ratio:1.46},
+  {q:'20214', label:'21Q4', total:265617725, wd:36785486, we:40845148, ratio:1.11},
+  {q:'20221', label:'22Q1', total:183164874, wd:23698399, we:32336440, ratio:1.36},
+  {q:'20222', label:'22Q2', total:244335139, wd:32433799, we:41083073, ratio:1.27},
+  {q:'20223', label:'22Q3', total:307599585, wd:39653834, we:54665209, ratio:1.38},
+  {q:'20224', label:'22Q4', total:323724574, wd:41606645, we:57845674, ratio:1.39},
+  {q:'20231', label:'23Q1', total:281692867, wd:37040855, we:48244296, ratio:1.30},
+  {q:'20232', label:'23Q2', total:289811935, wd:39092676, we:47174278, ratio:1.21},
+  {q:'20233', label:'23Q3', total:325034120, wd:41885254, we:57803925, ratio:1.38},
+  {q:'20234', label:'23Q4', total:342164196, wd:45039535, we:58483262, ratio:1.30},
+  {q:'20241', label:'24Q1', total:308747643, wd:41420261, we:50823170, ratio:1.23},
+  {q:'20242', label:'24Q2', total:257442898, wd:33920980, we:43919000, ratio:1.29},
+  {q:'20243', label:'24Q3', total:262265009, wd:33952338, we:46251659, ratio:1.36},
+  {q:'20244', label:'24Q4', total:296343085, wd:39739505, we:48822781, ratio:1.23},
+  {q:'20251', label:'25Q1', total:295446594, wd:39036357, we:50132404, ratio:1.28},
+  {q:'20252', label:'25Q2', total:270167029, wd:36643788, we:43474046, ratio:1.19},
+  {q:'20253', label:'25Q3', total:526667956, wd:65543619, we:99474930, ratio:1.52},
+  {q:'20254', label:'25Q4', total:402842793, wd:49725685, we:77107185, ratio:1.55},
+];
+
+for(let i=0;i<raw.length;i++){
+  raw[i].qoq = i===0 ? null : ((raw[i].total-raw[i-1].total)/raw[i-1].total*100);
+  if(i>=3){
+    const win = raw.slice(i-3,i+1).map(r=>r.total);
+    raw[i].ma4 = win.reduce((a,b)=>a+b,0)/4;
+  } else { raw[i].ma4 = null; }
+}
+
+const is2025 = raw.map(r => r.q.startsWith('2025'));
+let scope = 'full';
+function currentData(){ return scope==='full' ? raw : raw.filter(r=>r.q.startsWith('2025')); }
+
+const tooltip = document.getElementById('tooltip');
+function showTip(evt, html){
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  tooltip.style.left = (evt.clientX + 14) + 'px';
+  tooltip.style.top = (evt.clientY + 14) + 'px';
+}
+function hideTip(){ tooltip.style.display = 'none'; }
+function moveTip(evt){
+  tooltip.style.left = (evt.clientX + 14) + 'px';
+  tooltip.style.top = (evt.clientY + 14) + 'px';
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs){
+  const el = document.createElementNS(NS, tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+/* ---------- Grouped bar chart (주중 vs 주말) ---------- */
+function renderBarChart(host, data){
+  host.innerHTML = '';
+  const W = 1100, H = 340;
+  const padL = 60, padR = 20, padT = 20, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxVal = Math.max(...data.map(d=>Math.max(d.wd,d.we))) * 1.15;
+
+  const svg = svgEl('svg', {class:'chart', viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+
+  // gridlines + y labels
+  const gridN = 5;
+  for(let i=0;i<=gridN;i++){
+    const y = padT + plotH - (plotH*i/gridN);
+    const val = maxVal*i/gridN;
+    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, class:'grid-line'}));
+    const t = svgEl('text', {x:padL-8, y:y+3, class:'axis-label', 'text-anchor':'end'});
+    t.textContent = moneyShort(val);
+    svg.appendChild(t);
+  }
+
+  const n = data.length;
+  const groupW = plotW / n;
+  const barW = Math.min(20, groupW*0.32);
+
+  data.forEach((d,i)=>{
+    const gx = padL + groupW*i + groupW/2;
+    const y2025 = d.q.startsWith('2025');
+
+    // weekday bar
+    const hWd = (d.wd/maxVal)*plotH;
+    const rWd = svgEl('rect', {
+      x:gx-barW-2, y:padT+plotH-hWd, width:barW, height:hWd, rx:3,
+      fill:'#4a5178', style:'cursor:pointer;'
+    });
+    rWd.addEventListener('mousemove', (e)=>showTip(e, `<b>${d.label} 주중 일평균</b><br>${moneyFull(d.wd)}`));
+    rWd.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rWd);
+
+    // weekend bar
+    const hWe = (d.we/maxVal)*plotH;
+    const rWe = svgEl('rect', {
+      x:gx+2, y:padT+plotH-hWe, width:barW, height:hWe, rx:3,
+      fill: y2025 ? '#9d84fb' : '#7c5cfc', style:'cursor:pointer;'
+    });
+    rWe.addEventListener('mousemove', (e)=>showTip(e, `<b>${d.label} 주말 일평균</b><br>${moneyFull(d.we)}`));
+    rWe.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rWe);
+
+    const lbl = svgEl('text', {x:gx, y:H-10, class:'axis-label', 'text-anchor':'middle'});
+    lbl.textContent = d.label;
+    svg.appendChild(lbl);
+  });
+
+  host.appendChild(svg);
+}
+
+/* ---------- Line chart (ratio trend) ---------- */
+function renderRatioChart(host, data){
+  host.innerHTML = '';
+  const W = 560, H = 300;
+  const padL = 46, padR = 16, padT = 20, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const minV = 0.9, maxV = 1.65;
+  const n = data.length;
+
+  const svg = svgEl('svg', {class:'chart', viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+
+  const gridN = 5;
+  for(let i=0;i<=gridN;i++){
+    const y = padT + plotH - (plotH*i/gridN);
+    const val = minV + (maxV-minV)*i/gridN;
+    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, class:'grid-line'}));
+    const t = svgEl('text', {x:padL-6, y:y+3, class:'axis-label', 'text-anchor':'end'});
+    t.textContent = val.toFixed(2);
+    svg.appendChild(t);
+  }
+
+  const xFor = (i) => padL + (plotW * i/(n-1));
+  const yFor = (v) => padT + plotH - ((v-minV)/(maxV-minV))*plotH;
+
+  // baseline at 1.0
+  const yBase = yFor(1.0);
+  const baseline = svgEl('line', {x1:padL, x2:W-padR, y1:yBase, y2:yBase, stroke:'#5d6480', 'stroke-width':1, 'stroke-dasharray':'5,4'});
+  svg.appendChild(baseline);
+
+  // area fill
+  let areaPath = `M ${xFor(0)} ${yFor(data[0].ratio)} `;
+  data.forEach((d,i)=>{ if(i>0) areaPath += `L ${xFor(i)} ${yFor(d.ratio)} `; });
+  areaPath += `L ${xFor(n-1)} ${padT+plotH} L ${xFor(0)} ${padT+plotH} Z`;
+  const gradId = 'gradRatio';
+  const defs = svgEl('defs', {});
+  const grad = svgEl('linearGradient', {id:gradId, x1:'0', y1:'0', x2:'0', y2:'1'});
+  const stop1 = svgEl('stop', {offset:'0%', 'stop-color':'#4fd6c8', 'stop-opacity':'0.35'});
+  const stop2 = svgEl('stop', {offset:'100%', 'stop-color':'#4fd6c8', 'stop-opacity':'0'});
+  grad.appendChild(stop1); grad.appendChild(stop2);
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+  svg.appendChild(svgEl('path', {d:areaPath, fill:`url(#${gradId})`}));
+
+  // line
+  let linePath = `M ${xFor(0)} ${yFor(data[0].ratio)} `;
+  data.forEach((d,i)=>{ if(i>0) linePath += `L ${xFor(i)} ${yFor(d.ratio)} `; });
+  svg.appendChild(svgEl('path', {d:linePath, fill:'none', stroke:'#4fd6c8', 'stroke-width':2}));
+
+  // points
+  data.forEach((d,i)=>{
+    const y2025 = d.q.startsWith('2025');
+    const c = svgEl('circle', {
+      cx:xFor(i), cy:yFor(d.ratio), r: y2025 ? 4.5 : 2.5,
+      fill: y2025 ? '#7c5cfc' : '#4fd6c8', stroke:'#12141c', 'stroke-width':1.2, style:'cursor:pointer;'
+    });
+    c.addEventListener('mousemove', (e)=>showTip(e, `<b>${d.label}</b><br>배수: ${d.ratio.toFixed(2)}배`));
+    c.addEventListener('mouseleave', hideTip);
+    svg.appendChild(c);
+
+    if(i%2===0 || i===n-1){
+      const t = svgEl('text', {x:xFor(i), y:H-10, class:'axis-label', 'text-anchor':'middle'});
+      t.textContent = d.label;
+      svg.appendChild(t);
+    }
+  });
+
+  host.appendChild(svg);
+}
+
+/* ---------- QoQ bar chart ---------- */
+function renderQoQChart(host, data){
+  host.innerHTML = '';
+  const W = 560, H = 300;
+  const padL = 46, padR = 16, padT = 20, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const vals = data.map(d=>d.qoq).filter(v=>v!==null);
+  const maxAbs = Math.max(...vals.map(Math.abs)) * 1.15;
+  const n = data.length;
+
+  const svg = svgEl('svg', {class:'chart', viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+  const yZero = padT + plotH/2;
+
+  svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:yZero, y2:yZero, stroke:'#3a4066', 'stroke-width':1}));
+
+  [maxAbs, maxAbs/2, -maxAbs/2, -maxAbs].forEach(v=>{
+    const y = yZero - (v/maxAbs)*(plotH/2);
+    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, class:'grid-line'}));
+    const t = svgEl('text', {x:padL-6, y:y+3, class:'axis-label', 'text-anchor':'end'});
+    t.textContent = v.toFixed(0)+'%';
+    svg.appendChild(t);
+  });
+
+  const groupW = plotW/n;
+  const barW = Math.min(18, groupW*0.5);
+
+  data.forEach((d,i)=>{
+    const gx = padL + groupW*i + groupW/2;
+    if(d.qoq===null){
+      const t = svgEl('text', {x:gx, y:H-10, class:'axis-label', 'text-anchor':'middle'});
+      t.textContent = d.label;
+      svg.appendChild(t);
+      return;
+    }
+    const h = Math.abs(d.qoq/maxAbs)*(plotH/2);
+    const y = d.qoq>=0 ? yZero-h : yZero;
+    const rect = svgEl('rect', {
+      x:gx-barW/2, y:y, width:barW, height:h, rx:2,
+      fill: d.qoq>=0 ? '#4fd6c8' : '#ff6b6b', style:'cursor:pointer;'
+    });
+    rect.addEventListener('mousemove', (e)=>showTip(e, `<b>${d.label}</b><br>QoQ: ${d.qoq>=0?'+':''}${d.qoq.toFixed(1)}%`));
+    rect.addEventListener('mouseleave', hideTip);
+    svg.appendChild(rect);
+
+    const t = svgEl('text', {x:gx, y:H-10, class:'axis-label', 'text-anchor':'middle'});
+    t.textContent = d.label;
+    svg.appendChild(t);
+  });
+
+  host.appendChild(svg);
+}
+
+/* ---------- Total + MA line chart ---------- */
+function renderMAChart(host, data){
+  host.innerHTML = '';
+  const W = 560, H = 300;
+  const padL = 54, padR = 16, padT = 20, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxVal = Math.max(...data.map(d=>d.total)) * 1.1;
+  const n = data.length;
+
+  const svg = svgEl('svg', {class:'chart', viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+
+  const gridN = 5;
+  for(let i=0;i<=gridN;i++){
+    const y = padT + plotH - (plotH*i/gridN);
+    const val = maxVal*i/gridN;
+    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, class:'grid-line'}));
+    const t = svgEl('text', {x:padL-6, y:y+3, class:'axis-label', 'text-anchor':'end'});
+    t.textContent = moneyShort(val);
+    svg.appendChild(t);
+  }
+
+  const xFor = (i) => padL + (plotW * i/(n-1));
+  const yFor = (v) => padT + plotH - (v/maxVal)*plotH;
+
+  // total line (thin)
+  let totalPath = `M ${xFor(0)} ${yFor(data[0].total)} `;
+  data.forEach((d,i)=>{ if(i>0) totalPath += `L ${xFor(i)} ${yFor(d.total)} `; });
+  svg.appendChild(svgEl('path', {d:totalPath, fill:'none', stroke:'#4a5178', 'stroke-width':1.5}));
+  data.forEach((d,i)=>{
+    const c = svgEl('circle', {cx:xFor(i), cy:yFor(d.total), r:2, fill:'#4a5178', style:'cursor:pointer;'});
+    c.addEventListener('mousemove', (e)=>showTip(e, `<b>${d.label} 분기 총매출</b><br>${moneyFull(d.total)}`));
+    c.addEventListener('mouseleave', hideTip);
+    svg.appendChild(c);
+  });
+
+  // MA line (thick, only where not null)
+  let maPath = '';
+  let started = false;
+  data.forEach((d,i)=>{
+    if(d.ma4===null) return;
+    if(!started){ maPath += `M ${xFor(i)} ${yFor(d.ma4)} `; started = true; }
+    else maPath += `L ${xFor(i)} ${yFor(d.ma4)} `;
+  });
+  svg.appendChild(svgEl('path', {d:maPath, fill:'none', stroke:'#7c5cfc', 'stroke-width':2.5}));
+  data.forEach((d,i)=>{
+    if(d.ma4===null) return;
+    const c = svgEl('circle', {cx:xFor(i), cy:yFor(d.ma4), r:0.1, fill:'#7c5cfc'});
+    svg.appendChild(c);
+  });
+
+  data.forEach((d,i)=>{
+    if(i%2===0 || i===n-1){
+      const t = svgEl('text', {x:xFor(i), y:H-10, class:'axis-label', 'text-anchor':'middle'});
+      t.textContent = d.label;
+      svg.appendChild(t);
+    }
+  });
+
+  host.appendChild(svg);
+}
+
+/* ---------- Stats & verdict ---------- */
+function statBlock(){
+  if(scope==='full'){
+    return {
+      r:'0.469', r2:'0.220', pR:'0.0023',
+      t:'8.16', pT:'< 0.0001', d:'1.83',
+      avgRatio:'1.32', count:'20 / 20',
+      verdict: `<b>전체 기간(2021Q1~2025Q4) 20개 분기 전부</b>에서 주말 일평균 매출이 주중보다 높았습니다 (평균 <b>1.32배</b>). 상관계수 <b>R=0.469 (p=0.0023)</b>, 대응표본 t=8.16 (p&lt;0.0001), Cohen's d=1.83 → 통계적으로 견고하게 유의합니다.`
+    };
+  } else {
+    return {
+      r:'0.488', r2:'0.238', pR:'0.220 (참고)',
+      t:'3.07', pT:'0.055 (경계)', d:'1.53',
+      avgRatio:'1.39', count:'4 / 4',
+      verdict: `<b>2025년 4개 분기 전부</b>에서 주말 일평균 매출이 주중보다 높았습니다 (평균 <b>1.39배</b>, 전체기간 평균보다 높음). 다만 표본이 4개뿐이라 t-검정 p=0.055로 <span class="note">유의수준 0.05 경계</span>에 위치 — 전체 20분기 결과로 신뢰도를 보완해서 해석해야 합니다.`
+    };
+  }
+}
+
+function renderStats(){
+  const s = statBlock();
+  document.getElementById('verdictText').innerHTML = s.verdict;
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card accent">
+      <div class="label">상관계수 R (point-biserial)</div>
+      <div class="value">${s.r}</div>
+      <div class="foot">주말여부(0/1) ↔ 일평균매출 · p=${s.pR} → R²=${s.r2}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">대응표본 t-검정</div>
+      <div class="value">t = ${s.t}</div>
+      <div class="foot">p ${s.pT} · 주말 일평균매출 &gt; 주중 일평균매출</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">효과크기 (Cohen's d)</div>
+      <div class="value">${s.d}</div>
+      <div class="foot">d&gt;0.8 = '큰 효과' 기준 충족</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">주말&gt;주중 분기 비율</div>
+      <div class="value">${s.count}<span class="unit">(100%)</span></div>
+      <div class="foot">평균 주말/주중 배수 ${s.avgRatio}배</div>
+    </div>
+  `;
+}
+
+function renderBarPanel(){
+  const d = currentData();
+  document.getElementById('barTitle').textContent = scope==='full'
+    ? '분기별 주중 vs 주말 일평균 매출 (2021Q1–2025Q4, 전 20분기)'
+    : '분기별 주중 vs 주말 일평균 매출 (2025Q1–2025Q4)';
+  document.getElementById('barDesc').textContent = scope==='full'
+    ? '20개 분기 모두 보라색(주말) 막대가 회색(주중) 막대보다 높습니다. 옅은 보라색 = 2025년 구간.'
+    : '2025년 4개 분기 전부 주말 막대가 주중보다 높습니다.';
+  renderBarChart(document.getElementById('chartBarHost'), d);
+}
+
+function renderTable(){
+  const tbl = document.getElementById('tblBody');
+  tbl.innerHTML = '';
+  raw.forEach(r=>{
+    const cls = r.q.startsWith('2025') ? ' class="y2025"' : '';
+    const qoqTxt = r.qoq===null ? '–' : `${r.qoq>=0?'+':''}${r.qoq.toFixed(1)}%`;
+    const qoqClass = r.qoq===null ? '' : (r.qoq>=0 ? 'pos' : 'neg');
+    tbl.innerHTML += `<tr${cls}><td>${r.label}</td><td>${moneyFull(r.total)}</td><td>${moneyFull(r.wd)}</td><td>${moneyFull(r.we)}</td><td class="pos">${r.ratio.toFixed(2)}배</td><td class="${qoqClass}">${qoqTxt}</td></tr>`;
+  });
+}
+
+document.getElementById('btnFull').addEventListener('click', ()=>{
+  scope='full';
+  document.getElementById('btnFull').classList.add('active');
+  document.getElementById('btn2025').classList.remove('active');
+  renderStats(); renderBarPanel();
+});
+document.getElementById('btn2025').addEventListener('click', ()=>{
+  scope='2025';
+  document.getElementById('btn2025').classList.add('active');
+  document.getElementById('btnFull').classList.remove('active');
+  renderStats(); renderBarPanel();
+});
+
+function renderAll(){
+  renderStats();
+  renderBarPanel();
+  renderRatioChart(document.getElementById('chartRatioHost'), raw);
+  renderTable();
+  renderQoQChart(document.getElementById('chartQoQHost'), raw);
+  renderMAChart(document.getElementById('chartMAHost'), raw);
+}
+
+renderAll();
+window.addEventListener('resize', renderAll);
+})();
+</script>
+</body>
+</html>
