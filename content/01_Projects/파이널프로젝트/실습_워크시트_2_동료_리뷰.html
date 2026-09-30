@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>실습 워크시트 ② 동료 리뷰 | 새싹 강동 AI PM 7기</title>
+<style>
+  :root{--accent:#0f766e;--line:#cbd5e1;--muted:#64748b}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e5e7eb;font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:#0b1220}
+  .page{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:13mm 14mm 14mm;box-shadow:0 2px 12px rgba(0,0,0,.12);position:relative}
+  h1{font-size:19px;margin:0 0 2px}
+  .sub{font-size:11px;color:var(--muted);margin-bottom:9px}
+  .box{border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+  .box h2{font-size:12.5px;margin:0 0 3px;color:var(--accent)}
+  .box h2 span{color:var(--muted);font-weight:400;font-size:10.5px;margin-left:6px}
+  .box .hint{font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.5}
+  .box .hint b{color:#475569}
+  .fill{min-height:40px;border-bottom:1px dashed #d1d5db;font-size:12px;line-height:1.6;outline:none;padding:2px 0}
+  .fill.is-empty::before{content:attr(data-ph);color:#b9c2d0;white-space:pre-line;pointer-events:none;display:block}
+  .flag{font-size:10px;color:var(--muted);margin-top:3px}
+  .flag label{margin-right:10px;cursor:pointer}
+  .check{list-style:none;padding:0;margin:0;columns:2;column-gap:14px}
+  .check li{margin-bottom:4px;break-inside:avoid}
+  .check label{display:flex;align-items:flex-start;gap:5px;font-size:11px;line-height:1.5;cursor:pointer}
+  .check input[type=checkbox]{margin-top:2px;flex:none;cursor:pointer}
+  .check label.checked span{color:#0f766e;text-decoration:line-through;text-decoration-color:#99c9c2}
+  .count-badge{font-weight:700;color:#b45309;display:inline-block;min-width:16px}
+  .count-badge.pass{color:#0f766e}
+  .who{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:6px;vertical-align:2px}
+  .who.rev{background:#ccfbf1;color:#0f766e}
+  .who.aut{background:#dbeafe;color:#1d4ed8}
+  .tools{position:fixed;right:14px;top:14px;display:flex;gap:6px;align-items:center;z-index:9}
+  .tools button{border:0;border-radius:6px;padding:8px 13px;font-size:12.5px;cursor:pointer;color:#fff}
+  .tools .btn-save{background:#0f766e;font-weight:700}
+  .tools .btn-save.dirty{box-shadow:0 0 0 3px rgba(15,118,110,.25)}
+  .tools .btn-print{background:#111827}
+  .tools .btn-clear{background:#9ca3af}
+  .status{position:fixed;right:14px;top:52px;font-size:11px;color:#475569;background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 9px;max-width:230px;line-height:1.4;z-index:9}
+  .banner{max-width:210mm;margin:16px auto 0;padding:9px 14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:11.5px;color:#134e4a;line-height:1.5}
+  @media print{.banner{display:none}body{background:#fff}.page{box-shadow:none;margin:0;width:auto;min-height:auto}.tools,.status{display:none}.fill{border-bottom:1px dashed #cbd5e1}}
+</style>
+</head>
+<body>
+<div class="banner">🤝 <b>②번 시트 — 동료(리뷰어)가 작성합니다.</b> STEP 1~3은 리뷰어가, STEP 4는 작성자가 채웁니다. 오른쪽 위 <b>"파일로 저장"</b>을 누르면 입력 내용이 담긴 .html 파일로 저장되고, 다시 열면 이어서 쓸 수 있습니다. (본인 정리는 ①번 시트를 사용합니다.)</div>
+<div class="tools">
+  <button class="btn-save" id="saveBtn" onclick="saveFile()">💾 파일로 저장</button>
+  <button class="btn-print" onclick="window.print()">인쇄 / PDF 저장</button>
+  <button class="btn-clear" onclick="clearAll()">내용 지우기</button>
+</div>
+<div class="status" id="status">아직 저장 안 됨 · 임시 백업만 있음</div>
+
+<div class="page">
+  <h1>실습 워크시트 ② · 동료 리뷰 시트 (30초 테스트 + 10문항 체크)</h1>
+  <div class="sub">리뷰어(작성): <span class="fill is-empty" contenteditable="plaintext-only" data-ph="이름" style="display:inline-block;min-width:80px;min-height:14px;border:0"></span> · 리뷰 대상자: <span class="fill is-empty" contenteditable="plaintext-only" data-ph="이름" style="display:inline-block;min-width:80px;min-height:14px;border:0"></span></div>
+
+  <div class="box">
+    <h2>STEP 1 · 30초 테스트 <span class="who rev">리뷰어</span></h2>
+    <div class="hint">상대 시트의 <b>제목 + 기간·역할 줄 + ①문제의 첫 줄</b>만 30초 읽고, 문서를 덮은 뒤 아래를 씁니다. 이 사람은 <b>무슨 문제</b>를 다뤘고 <b>무슨 판단</b>을 했다고 읽히나요? (작성자는 듣기만 합니다)</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 종이 업계 서비스를 만들었고, 인터뷰를 해 보니 원래 노리던 업체 사장님이 아니라 일반 사용자가 진짜 고객이라는 걸 알고 방향을 바꾼 것 같습니다." style="min-height:48px"></div>
+    <div class="flag">작성자 의도와 일치했나요? <label><input type="checkbox"> 일치</label><label><input type="checkbox"> 절반</label><label><input type="checkbox"> 불일치 → 제목과 ①문제 첫 줄부터 다시 씁니다</label></div>
+  </div>
+
+  <div class="box">
+    <h2>STEP 2 · 10문항 체크 <span class="who rev">리뷰어</span><span>7개 이상이면 제출 가능 수준</span></h2>
+    <div class="hint">상대 시트를 보면서 해당되는 항목을 클릭합니다. 체크하면 아래 숫자가 자동으로 올라갑니다.</div>
+    <ul class="check" id="checklist10">
+      <li><label><input type="checkbox"><span>제목만 읽고 "무슨 문제를 어떻게 판단했는지" 알 수 있다</span></label></li>
+      <li><label><input type="checkbox"><span>기간·형식·팀 규모·내 역할이 첫 3줄 안에 있다</span></label></li>
+      <li><label><input type="checkbox"><span>문제 문장에 대상(누가)과 근거(숫자 또는 인용)가 있다</span></label></li>
+      <li><label><input type="checkbox"><span>선택지가 2개 이상 등장하고, 고른 이유가 있다</span></label></li>
+      <li><label><input type="checkbox"><span>"협업했다" 대신 동사로 시작하는 내 행동이 3개 있다</span></label></li>
+      <li><label><input type="checkbox"><span>검증 방법과 표본 수가 적혀 있다 (결과가 나빴어도)</span></label></li>
+      <li><label><input type="checkbox"><span>숫자가 최소 1개 있다 (없으면 대안 지표)</span></label></li>
+      <li><label><input type="checkbox"><span>한계를 썼다면 바로 다음 줄에 다음 단계가 있다</span></label></li>
+      <li><label><input type="checkbox"><span>화면 캡처가 2장 이하다 (또는 넣을 계획이 2장 이하다)</span></label></li>
+      <li><label><input type="checkbox"><span>증거 링크(발표자료·프로토타입·기록)가 있다</span></label></li>
+    </ul>
+    <div class="flag" style="margin-top:6px">체크 수: <span class="count-badge" id="checkCount">0</span> / 10 <span id="checkVerdict" style="margin-left:6px"></span></div>
+  </div>
+
+  <div class="box">
+    <h2>STEP 3 · 리뷰어가 남기는 두 줄 <span class="who rev">리뷰어</span></h2>
+    <div class="hint">칭찬과 지적을 하나씩. <b>가장 강한 문장</b>은 그대로 인용하고, <b>가장 먼저 고칠 칸</b>은 번호(①~⑤)로 짚어 줍니다.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="가장 강한 문장: 예) '가설 2개가 기각됐다'고 솔직하게 쓴 ②번 칸&#10;가장 먼저 고칠 칸: 예) ③번 — '팀과 협업했다'로 끝나서 본인이 뭘 했는지 안 보입니다" style="min-height:52px"></div>
+  </div>
+
+  <div class="box">
+    <h2>STEP 4 · 작성자의 다음 행동 <span class="who aut">작성자</span></h2>
+    <div class="hint">리뷰를 듣고 <b>작성자 본인이</b> 채웁니다. 오늘 고칠 것 하나, 이번 주에 채울 것 하나.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="오늘 안에: 예) ③번 칸을 동사 3줄로 다시 쓰고, 각 줄에 파일명·날짜를 붙인다&#10;이번 주 안에: 예) 사용자 인터뷰 2명을 추가하고 ④번 칸에 숫자를 채운다" style="min-height:52px"></div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'sesac7-worksheet-2';
+  const SAVE_NAME = '포트폴리오_동료리뷰_작성본.html';
+  const statusEl = document.getElementById('status');
+  const saveBtn = document.getElementById('saveBtn');
+  let fileHandle = null;
+  let dirty = false;
+
+
+  // ---- placeholder 제어 ----------------------------------------------------
+  // CSS :empty 는 글을 지웠을 때 브라우저가 남기는 <br> 때문에 깨진다.
+  // 실제 글자 수로 판정하고, 빈 칸이면 남은 <br>까지 정리한다.
+  function refreshPlaceholder(el){
+    const empty = el.textContent.replace(/[\s\u200B]/g, '') === '';
+    if(empty && el.innerHTML !== ''){
+      const focused = (document.activeElement === el);
+      el.innerHTML = '';
+      if(focused){
+        const r = document.createRange();
+        r.selectNodeContents(el); r.collapse(true);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      }
+    }
+    el.classList.toggle('is-empty', empty);
+  }
+  function refreshAllPlaceholders(){
+    document.querySelectorAll('.fill').forEach(refreshPlaceholder);
+  }
+  function setStatus(t){ statusEl.textContent = t; }
+  function markDirty(){
+    dirty = true;
+    saveBtn.classList.add('dirty');
+    setStatus('입력 중… 아직 파일로 저장 안 됨');
+    try{
+      localStorage.setItem(KEY, JSON.stringify({
+        fills: [...document.querySelectorAll('.fill')].map(x => x.textContent),
+        boxes: [...document.querySelectorAll('input[type=checkbox]')].map(b => b.checked)
+      }));
+    }catch(e){}
+  }
+
+  function updateCheckCount(){
+    const boxes = [...document.querySelectorAll('#checklist10 input[type=checkbox]')];
+    const n = boxes.filter(b => b.checked).length;
+    boxes.forEach(b => b.closest('label').classList.toggle('checked', b.checked));
+    const c = document.getElementById('checkCount');
+    const v = document.getElementById('checkVerdict');
+    c.textContent = n;
+    c.classList.toggle('pass', n >= 7);
+    v.textContent = n >= 7 ? '→ 제출 가능 수준' : '→ 아직 보완 필요';
+    v.style.color = n >= 7 ? '#0f766e' : '#b45309';
+  }
+
+  function clearAll(){
+    if(!confirm('입력한 내용을 모두 지울까요? (저장된 파일 자체는 지워지지 않습니다)')) return;
+    document.querySelectorAll('.fill').forEach(e => e.textContent = '');
+    document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+    updateCheckCount();
+    refreshAllPlaceholders();
+    markDirty();
+  }
+
+  (function restoreBackupIfAny(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if(!saved || !saved.fills) return;
+      const fills = [...document.querySelectorAll('.fill')];
+      if(saved.fills.some(v => v && v.trim()) && !fills.some(f => f.textContent && f.textContent.trim())){
+        if(confirm('이전에 브라우저에 임시 저장된 입력 내용이 있습니다. 불러올까요?\n(파일로 저장한 적이 없다면 이 임시본이 유일한 복사본입니다)')){
+          saved.fills.forEach((v, i) => { if(fills[i] && v) fills[i].textContent = v; });
+          refreshAllPlaceholders();
+          const boxes = [...document.querySelectorAll('input[type=checkbox]')];
+          (saved.boxes || []).forEach((v, i) => { if(boxes[i]) boxes[i].checked = !!v; });
+        }
+      }
+    }catch(e){}
+  })();
+
+  document.querySelectorAll('.fill').forEach(f => f.addEventListener('input', () => {
+    refreshPlaceholder(f); markDirty();
+  }));
+  document.querySelectorAll('.fill').forEach(f => f.addEventListener('blur', () => refreshPlaceholder(f)));
+  refreshAllPlaceholders();
+  document.querySelectorAll('#checklist10 input[type=checkbox]').forEach(b => {
+    b.addEventListener('change', () => { updateCheckCount(); markDirty(); });
+  });
+  document.querySelectorAll('input[type=checkbox]:not(#checklist10 input)').forEach(b => {
+    b.addEventListener('change', markDirty);
+  });
+  updateCheckCount();
+
+  function checkboxesToAttributes(root){
+    root.querySelectorAll('input[type=checkbox]').forEach(c => {
+      if(c.checked) c.setAttribute('checked', ''); else c.removeAttribute('checked');
+    });
+  }
+
+  async function saveFile(){
+    const clone = document.documentElement.cloneNode(true);
+    checkboxesToAttributes(clone);
+    const blob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], { type: 'text/html' });
+    try{
+      if(window.showSaveFilePicker){
+        if(!fileHandle){
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: SAVE_NAME,
+            types: [{ description: 'HTML 파일', accept: { 'text/html': ['.html'] } }]
+          });
+        }
+        const w = await fileHandle.createWritable();
+        await w.write(blob); await w.close();
+        dirty = false; saveBtn.classList.remove('dirty');
+        setStatus('✅ 파일로 저장 완료 (' + new Date().toLocaleTimeString('ko-KR') + ')');
+        try{ localStorage.removeItem(KEY); }catch(e){}
+        return;
+      }
+    }catch(err){
+      if(err && err.name === 'AbortError') return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = SAVE_NAME;
+    document.body.appendChild(a); a.click(); a.remove();
+    dirty = false; saveBtn.classList.remove('dirty');
+    setStatus('✅ 다운로드 완료 (다운로드 폴더 확인)');
+    try{ localStorage.removeItem(KEY); }catch(e){}
+  }
+
+  window.addEventListener('beforeunload', (e) => { if(dirty){ e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>

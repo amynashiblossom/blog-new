@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>실습 워크시트 ① 내가 쓰는 한 장 | 새싹 강동 AI PM 7기</title>
+<style>
+  :root{--accent:#2563eb;--line:#cbd5e1;--muted:#64748b}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e5e7eb;font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:#0b1220}
+  .page{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:12mm 14mm 11mm;box-shadow:0 2px 12px rgba(0,0,0,.12);position:relative}
+  h1{font-size:19px;margin:0 0 2px}
+  .sub{font-size:11px;color:var(--muted);margin-bottom:9px}
+  .meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+  .meta div{border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:11px;min-height:40px}
+  .meta div b{display:block;color:var(--accent);font-size:10px;margin-bottom:2px}
+  .box{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:7px}
+  .box h2{font-size:12.5px;margin:0 0 3px;color:var(--accent)}
+  .box h2 span{color:var(--muted);font-weight:400;font-size:10.5px;margin-left:6px}
+  .box .hint{font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.5}
+  .box .hint b{color:#475569}
+  .box .hint .no{color:#b45309}
+  .fill{min-height:40px;border-bottom:1px dashed #d1d5db;font-size:12px;line-height:1.6;outline:none;padding:2px 0}
+  .fill.is-empty::before{content:attr(data-ph);color:#b9c2d0;white-space:pre-line;pointer-events:none;display:block}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .flag{font-size:10px;color:var(--muted);margin-top:3px}
+  .flag label{margin-right:10px;cursor:pointer}
+  .title .fill{font-size:14px;font-weight:700;min-height:28px}
+  .tools{position:fixed;right:14px;top:14px;display:flex;gap:6px;align-items:center;z-index:9}
+  .tools button{border:0;border-radius:6px;padding:8px 13px;font-size:12.5px;cursor:pointer;color:#fff}
+  .tools .btn-save{background:#2563eb;font-weight:700}
+  .tools .btn-save.dirty{box-shadow:0 0 0 3px rgba(37,99,235,.25)}
+  .tools .btn-print{background:#111827}
+  .tools .btn-clear{background:#9ca3af}
+  .status{position:fixed;right:14px;top:52px;font-size:11px;color:#475569;background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 9px;max-width:230px;line-height:1.4;z-index:9}
+  .banner{max-width:210mm;margin:16px auto 0;padding:9px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:11.5px;color:#1e3a5f;line-height:1.5}
+  @media print{.banner{display:none}body{background:#fff}.page{box-shadow:none;margin:0;width:auto;min-height:auto}.tools,.status{display:none}.fill{border-bottom:1px dashed #cbd5e1}}
+</style>
+</head>
+<body>
+<div class="banner">📝 <b>①번 시트 — 본인이 작성합니다.</b> 오른쪽 위 <b>"파일로 저장"</b>을 누르면 지금까지 입력한 내용이 그대로 담긴 .html 파일로 저장됩니다. 처음 한 번만 저장 위치를 묻고, 그다음부터는 같은 파일에 덮어씁니다. 저장한 파일을 다시 열면 이어서 쓸 수 있습니다. (동료 리뷰는 ②번 시트를 사용합니다.)</div>
+<div class="tools">
+  <button class="btn-save" id="saveBtn" onclick="saveFile()">💾 파일로 저장</button>
+  <button class="btn-print" onclick="window.print()">인쇄 / PDF 저장</button>
+  <button class="btn-clear" onclick="clearAll()">내용 지우기</button>
+</div>
+<div class="status" id="status">아직 저장 안 됨 · 임시 백업만 있음</div>
+
+<div class="page">
+  <h1>실습 워크시트 ① · 내 프로젝트 하나를 "한 장"으로 정리하기</h1>
+  <div class="sub">새싹 강동 AI PM 7기 · 포트폴리오 특강 II (2026.09.17) · 작성자: <span class="fill is-empty" contenteditable="plaintext-only" data-ph="이름" style="display:inline-block;min-width:80px;min-height:14px;border:0"></span></div>
+
+  <div class="box title">
+    <h2>제목 <span>한 줄로 "무엇을 근거로 무엇을 바꿨는지"가 보이게</span></h2>
+    <div class="hint">공식: <b>[근거]를 근거로 [무엇]을 [어떻게 했다]</b> + 기간. 서비스 이름만 쓰면 판단이 안 보입니다.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 인터뷰 6명에서 '청첩장' 수요를 발견하고, 타깃을 업계 공급자에서 일반 사용자로 바꾼 제지 기반 서비스 프로토타입 (5일)&#10;예) 가설 2개가 기각된 뒤 문제를 다시 정의해, 재구매가 늦은 고객(매출 84%)을 겨냥한 전략을 찾아낸 4일 데이터 분석"></div>
+  </div>
+
+  <div class="meta">
+    <div><b>기간 · 형식</b><span class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 5일 · 바이브코딩 스프린트&#10;예) 4일 · SQL 데이터 분석" style="min-height:22px;border:0"></span></div>
+    <div><b>팀 규모 · 내 역할 (한 줄)</b><span class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 4인 팀 · 사용자 인터뷰 설계와 진행 담당" style="min-height:22px;border:0"></span></div>
+    <div><b>도구 · AI 활용</b><span class="fill is-empty" contenteditable="plaintext-only" data-ph="예) Figma(화면), Firebase(배포), Gemini(페르소나 초안)" style="min-height:22px;border:0"></span></div>
+  </div>
+
+  <div class="box">
+    <h2>① 문제 <span>누가 · 어떤 상황에서 · 무엇이 불편한가 · 근거</span></h2>
+    <div class="hint">스프린트 질문 / 문제정의 문장을 그대로 가져와도 됩니다. 처음 정의와 고친 정의가 다르다면 <b>둘 다</b> 쓰는 편이 강합니다. 숫자가 있으면 넣습니다.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 시간이 부족한 20~30대는 흩어진 자기계발 콘텐츠를 고르는 데 지친다.&#10;      우리 팀의 스프린트 질문: '추천 기능만으로 사용자를 붙잡을 수 있을까?'&#10;예) 처음: 저마진 자전거에 매출이 쏠려 있다 → 다시 정의: 액세서리 재구매율이 5%에 그치고, 다시 사기까지 평균 202일이 걸린다."></div>
+  </div>
+
+  <div class="box">
+    <h2>② 결정과 근거 <span>선택지 → 고른 것 → 이유. 가설 한 문장</span></h2>
+    <div class="hint">"우리 팀이 A 대신 B를 고른 순간"을 떠올리세요. <b>기각된 가설이 있다면 그것이 곧 결정의 근거</b>입니다. 채택되지 않은 내 주장도 씁니다.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) A안(추천 결과만 보여주기)과 B안(추천 이유와 과정을 함께 보여주기) 중 B안을 골랐다.&#10;      근거: 인터뷰 4명 중 3명이 '추천 근거가 필요하다'고 말했다.&#10;      가설: 근거를 함께 보여주면 추천을 신뢰하고 구독까지 이어질 것이다.&#10;예) 원래 타깃이던 '20~30년 경력 종사자'는 섭외가 어려웠다 → 타깃을 일반 사용자로 바꾸고 인터뷰를 다시 설계했다."></div>
+  </div>
+
+  <div class="box">
+    <h2>③ 내가 한 일 <span>동사로 시작하는 3줄 + 증거. 팀 기여는 마지막 한 줄</span></h2>
+    <div class="hint">
+      <b>쓸 수 있는 동사:</b> 설계했다 · 진행했다 · 인터뷰했다 · 분석했다 · 쿼리를 작성했다 · 그렸다 · 제안했다 · 조율했다 · 검증했다 · 정리했다<br>
+      <span class="no"><b>피할 말:</b> "협업했다" · "참여했다" · "도왔다" — 팀원 네 명이 똑같이 쓸 수 있는 말이라 내 것이 되지 않습니다.</span><br>
+      <b>각 줄 끝에 증거를 답니다:</b> 파일 이름 · 날짜 · 링크 (예: "인터뷰 가이드 1/21", "Figma 1/23")
+    </div>
+    <div class="fill is-empty" contenteditable="plaintext-only" style="min-height:74px" data-ph="예)&#10;• 사용자 인터뷰 질문 12개를 설계하고, 6명 중 3명을 직접 진행했다 (인터뷰 가이드 1/21)&#10;• 표정·몸짓을 부정/중립/긍정으로 나눠 적는 기록 방식을 제안해 팀 표준이 됐다&#10;• 첫 화면 진입 동선 A안·B안을 그려 팀 투표에 올렸고, B안이 채택됐다 (Figma 1/23)&#10;— 팀원 기여: 프로토타입 개발 ○○○, 데이터 정리 ○○○"></div>
+  </div>
+
+  <div class="box">
+    <h2>④ 검증과 결과 <span>방법 · 표본 수 · 결과 · 채택/기각. 숫자 1개 이상</span></h2>
+    <div class="hint">결과가 나빴어도 씁니다. 숫자가 없으면 <b>대안 지표</b>: "6명 중 4명이 같은 지점에서 막힘", "가설 2개 중 1개 기각", "화면 단계 5개 → 3개".</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 사용자 인터뷰 6명(외부 3명 · 내부 3명), 1인당 30~45분.&#10;      결과: 대부분 '디지털로 대체 가능'하다고 답했지만, 질감·인증보다 '마음을 담아 전할 청첩장'을 원했다.&#10;      → 예상과 달랐던 지점이라, 서비스의 주 용도를 청첩장 쪽으로 좁혔다."></div>
+    <div class="flag">이 칸이 비어 있다면: <label><input type="checkbox"> A. 이번 주 안에 채운다 (인터뷰 2명 추가 / 재분석 / 팀 기록 복원)</label><label><input type="checkbox"> B. 한계로 정직하게 쓰고 다음 단계를 붙인다</label></div>
+  </div>
+
+  <div class="box">
+    <h2>⑤ 배움과 다음 단계 <span>무엇이 바뀌었나 · 다음엔 무엇을 다르게 할 것인가</span></h2>
+    <div class="hint">한계를 썼다면 <b>바로 다음 줄에 "다음 단계"</b>를 붙입니다. 이 한 쌍이 판단력을 보여 줍니다.</div>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 가설 없이 3분만 써 보게 해서 정량 데이터를 얻지 못했다.&#10;      다음에는 GA·GTM을 먼저 심고 '추천 클릭률'을 기준 지표로 정하겠다.&#10;예) 유의미한 결과가 나오지 않아 가설을 여러 번 고쳤지만, 검증 실패에서도 인사이트를 얻을 수 있다는 걸 배웠다."></div>
+  </div>
+
+  <div class="row">
+    <div class="box" style="margin-bottom:7px">
+      <h2>증거 링크 <span>읽는 사람이 확인할 수 있게</span></h2>
+      <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 발표자료(Canva) 링크&#10;예) 배포된 프로토타입 주소&#10;예) 노션 일지 · 인터뷰 기록 시트" style="min-height:46px"></div>
+    </div>
+    <div class="box" style="margin-bottom:7px">
+      <h2>AI 칸 (선택) <span>어디에 왜 썼나 · 틀렸던 순간 · 어떻게 잡았나</span></h2>
+      <div class="fill is-empty" contenteditable="plaintext-only" data-ph="예) 페르소나 초안을 Gemini로 만들었는데 실제 인터뷰와 달라 3번 고쳐 썼다.&#10;      '좋은 답'의 기준을 '인터뷰 인용문과 겹치는가'로 정했다." style="min-height:46px"></div>
+    </div>
+  </div>
+
+  <div class="box" style="background:#f8fafc">
+    <h2>파이널 프로젝트 주간 기록 카드 <span>매주 금요일 이 5줄만 남기면, 종강 때 정리된 포트폴리오가 4편 더 생깁니다</span></h2>
+    <div class="fill is-empty" contenteditable="plaintext-only" data-ph="이번 주의 질문 1:&#10;이번 주의 결정 1 (선택지 / 근거):&#10;이번 주의 증거 1:&#10;이번 주의 배움 1:&#10;AI를 어디에 썼고 어디서 틀렸나:" style="min-height:86px"></div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'sesac7-worksheet-1';
+  const SAVE_NAME = '포트폴리오_워크시트1_작성본.html';
+  const statusEl = document.getElementById('status');
+  const saveBtn = document.getElementById('saveBtn');
+  let fileHandle = null;
+  let dirty = false;
+
+
+  // ---- placeholder 제어 ----------------------------------------------------
+  // CSS :empty 는 글을 지웠을 때 브라우저가 남기는 <br> 때문에 깨진다.
+  // 실제 글자 수로 판정하고, 빈 칸이면 남은 <br>까지 정리한다.
+  function refreshPlaceholder(el){
+    const empty = el.textContent.replace(/[\s\u200B]/g, '') === '';
+    if(empty && el.innerHTML !== ''){
+      const focused = (document.activeElement === el);
+      el.innerHTML = '';
+      if(focused){
+        const r = document.createRange();
+        r.selectNodeContents(el); r.collapse(true);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      }
+    }
+    el.classList.toggle('is-empty', empty);
+  }
+  function refreshAllPlaceholders(){
+    document.querySelectorAll('.fill').forEach(refreshPlaceholder);
+  }
+  function setStatus(t){ statusEl.textContent = t; }
+  function markDirty(){
+    dirty = true;
+    saveBtn.classList.add('dirty');
+    setStatus('입력 중… 아직 파일로 저장 안 됨');
+    try{
+      localStorage.setItem(KEY, JSON.stringify([...document.querySelectorAll('.fill')].map(x => x.textContent)));
+    }catch(e){}
+  }
+
+  function clearAll(){
+    if(!confirm('입력한 내용을 모두 지울까요? (저장된 파일 자체는 지워지지 않습니다)')) return;
+    document.querySelectorAll('.fill').forEach(e => e.textContent = '');
+    document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+    refreshAllPlaceholders();
+    markDirty();
+  }
+
+  (function restoreBackupIfAny(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if(!saved) return;
+      const fills = [...document.querySelectorAll('.fill')];
+      if(saved.some(v => v && v.trim()) && !fills.some(f => f.textContent && f.textContent.trim())){
+        if(confirm('이전에 브라우저에 임시 저장된 입력 내용이 있습니다. 불러올까요?\n(파일로 저장한 적이 없다면 이 임시본이 유일한 복사본입니다)')){
+          saved.forEach((v, i) => { if(fills[i] && v) fills[i].textContent = v; });
+          refreshAllPlaceholders();
+        }
+      }
+    }catch(e){}
+  })();
+
+  document.querySelectorAll('.fill').forEach(f => f.addEventListener('input', () => {
+    refreshPlaceholder(f); markDirty();
+  }));
+  document.querySelectorAll('.fill').forEach(f => f.addEventListener('blur', () => refreshPlaceholder(f)));
+  refreshAllPlaceholders();
+  document.querySelectorAll('input[type=checkbox]').forEach(b => b.addEventListener('change', markDirty));
+
+  function checkboxesToAttributes(root){
+    root.querySelectorAll('input[type=checkbox]').forEach(c => {
+      if(c.checked) c.setAttribute('checked', ''); else c.removeAttribute('checked');
+    });
+  }
+
+  async function saveFile(){
+    const clone = document.documentElement.cloneNode(true);
+    checkboxesToAttributes(clone);
+    const blob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], { type: 'text/html' });
+    try{
+      if(window.showSaveFilePicker){
+        if(!fileHandle){
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: SAVE_NAME,
+            types: [{ description: 'HTML 파일', accept: { 'text/html': ['.html'] } }]
+          });
+        }
+        const w = await fileHandle.createWritable();
+        await w.write(blob); await w.close();
+        dirty = false; saveBtn.classList.remove('dirty');
+        setStatus('✅ 파일로 저장 완료 (' + new Date().toLocaleTimeString('ko-KR') + ')');
+        try{ localStorage.removeItem(KEY); }catch(e){}
+        return;
+      }
+    }catch(err){
+      if(err && err.name === 'AbortError') return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = SAVE_NAME;
+    document.body.appendChild(a); a.click(); a.remove();
+    dirty = false; saveBtn.classList.remove('dirty');
+    setStatus('✅ 다운로드 완료 (다운로드 폴더 확인)');
+    try{ localStorage.removeItem(KEY); }catch(e){}
+  }
+
+  window.addEventListener('beforeunload', (e) => { if(dirty){ e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>
